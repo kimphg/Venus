@@ -47,7 +47,7 @@
 #endif
 using namespace arma;*/
 //#include <list>
-using namespace std;
+//using namespace std;
 /*typedef struct {
     short x,y;
     unsigned char level;

@@ -28,9 +28,9 @@ typedef struct {
     std::wstring text;
 } Place_t;
 
-typedef vector<Place_t> C2_PlaceList;
-typedef vector<Point_t> C2_Poly;
-typedef vector<C2_Poly> C2_PolyList;
+typedef std::vector<Place_t> C2_PlaceList;
+typedef std::vector<Point_t> C2_Poly;
+typedef std::vector<C2_Poly> C2_PolyList;
 
 
 class Q_vnmap

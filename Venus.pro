@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2015-06-20T15:53:12
+# Project created by QtCreator 2015-06-20T15:53:11
 # Author Phung Kim Phuong pawnc7@gmail.com
 #-------------------------------------------------
 #Features:
@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     qcustomcombobox.cpp \
     qcustomgroupbox.cpp \
     qcustomtabwidget.cpp \
-    ctracker.cpp
+    ctracker.cpp \
+    Utility.cpp
 HEADERS  += mainwindow.h \
     vnmap.h \
     Config.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     qcustomcombobox.h \
     qcustomgroupbox.h \
     qcustomtabwidget.h \
-    ctracker.h
+    ctracker.h \
+    Utility.h
 
 FORMS    += mainwindow.ui \
     gpsdialog.ui \
@@ -64,11 +66,28 @@ win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -llapack_win32_MT
 unix: LIBS += -larmadillo
 win32:LIBS += -L$$PWD/../WpdPack/Lib/ -lPacket
 win32:LIBS += -L$$PWD/../WpdPack/Lib/ -lwpcap
-INCLUDEPATH += $$PWD/../opencv/build/include
-win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_core2411
-win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_highgui2411
-win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_imgproc2411
-#win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_videoio249
+INCLUDEPATH += D:/OpenCV/OpenCV2411/build/include
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_core2411
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_highgui2411
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_imgproc2411
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_calib3d2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_contrib2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_core2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_features2d2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_flann2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_gpu2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_legacy2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_ml2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_nonfree2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_objdetect2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_ocl2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_photo2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_stitching2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_superres2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_video2411d
+win32:LIBS += D:/OpenCV/OpenCV2411/build/x86/vc10/lib/ -lopencv_videostab2411d
+
+
 
 LIBS +=
 #win32:CONFIG(release, debug|release):INCLUDEPATH += $$PWD/armadillo/lib_winx86
