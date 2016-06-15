@@ -1,6 +1,6 @@
 #ifndef CTRACKER_H
 #define CTRACKER_H
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 
 class CTracker
 {

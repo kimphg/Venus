@@ -22,6 +22,7 @@
 #include <QImage>
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <ctracker.h>
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
 //#include <QtSerialPort/QSerialPort>
@@ -201,6 +202,8 @@ private slots:
     //void on_toolButton_xl_dopler_toggled(bool checked);
 
     //void on_toolButton_xl_nguong_2_toggled(bool checked);
+
+    void on_toolButton_centerView_2_clicked();
 
 private:
     void initActionsConnections();

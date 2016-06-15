@@ -2118,3 +2118,10 @@ void Mainwindow::on_toolButton_centerZoom_clicked()
     processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
 }
 
+
+void Mainwindow::on_toolButton_centerView_2_clicked()
+{
+    CTracker tracker;
+
+    printf("sss");
+}
