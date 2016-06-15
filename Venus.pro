@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     qcustomframe.cpp \
     qcustomcombobox.cpp \
     qcustomgroupbox.cpp \
-    qcustomtabwidget.cpp
+    qcustomtabwidget.cpp \
+    ctracker.cpp
 HEADERS  += mainwindow.h \
     vnmap.h \
     Config.h \
@@ -45,7 +46,8 @@ HEADERS  += mainwindow.h \
     qcustomframe.h \
     qcustomcombobox.h \
     qcustomgroupbox.h \
-    qcustomtabwidget.h
+    qcustomtabwidget.h \
+    ctracker.h
 
 FORMS    += mainwindow.ui \
     gpsdialog.ui \
@@ -62,10 +64,10 @@ win32:LIBS += -L$$PWD/../Dropbox/GitHub/LIBS/armadilloWin32/lib_winx86/ -llapack
 unix: LIBS += -larmadillo
 win32:LIBS += -L$$PWD/../Dropbox/GitHub/LIBS/WpdPack/Lib/ -lPacket
 win32:LIBS += -L$$PWD/../Dropbox/GitHub/LIBS/WpdPack/Lib/ -lwpcap
-INCLUDEPATH += $$PWD/../Dropbox/GitHub/LIBS/opencv/build/include
-win32:LIBS += -L$$PWD/../Dropbox/GitHub/LIBS/opencv/build/x86/vc10/lib/ -lopencv_core249
-win32:LIBS += -L$$PWD/../Dropbox/GitHub/LIBS/opencv/build/x86/vc10/lib/ -lopencv_highgui249
-win32:LIBS += -L$$PWD/../Dropbox/GitHub/LIBS/opencv/build/x86/vc10/lib/ -lopencv_imgproc249
+INCLUDEPATH += $$PWD/../opencv/build/include
+win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_core249
+win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_highgui249
+win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_imgproc249
 #win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_videoio249
 
 LIBS +=

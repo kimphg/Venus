@@ -20,6 +20,7 @@
 #include <C_radar_data.h>
 #include <QFileDialog>
 #include <QImage>
+#include <QTcpSocket>
 #include <QHostAddress>
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
@@ -73,6 +74,7 @@ private:
     //QUdpSocket      *udpSocket;//raymarine
     QUdpSocket      *udpARPA;//ARPA
     QUdpSocket      *udpSendSocket;//radar control
+    QTcpSocket      *tcpSender;
     //
     //CConfig         m_config;
     //CpView  *       m_view;
@@ -140,7 +142,7 @@ private slots:
 
 //    void on_horizontalSlider_brightness_actionTriggered(int action);
 
-    void on_horizontalSlider_brightness_valueChanged(int value);
+//    void on_horizontalSlider_brightness_valueChanged(int value);
 
 //    void on_horizontalSlider_signal_scale_valueChanged(int value);
 
@@ -152,33 +154,10 @@ private slots:
 
 //    void on_actionRotateStart_toggled(bool arg1);
 
-    void on_horizontalSlider_gain_valueChanged(int value);
-
-    void on_horizontalSlider_rain_valueChanged(int value);
-
-    void on_horizontalSlider_sea_valueChanged(int value);
 
     void on_toolButton_exit_clicked();
 
     //void on_toolButton_setting_clicked();
-
-    void on_toolButton_scan_clicked();
-
-    void on_toolButton_tx_toggled(bool checked);
-
-    void on_toolButton_scan_toggled(bool checked);
-
-    void on_toolButton_xl_nguong_toggled(bool checked);
-
-    void on_toolButton_replay_toggled(bool checked);
-
-    void on_toolButton_replay_fast_toggled(bool checked);
-
-    void on_toolButton_record_toggled(bool checked);
-
-    void on_toolButton_open_record_clicked();
-
-    void on_toolButton_alphaView_toggled(bool checked);
 
     //void on_toolButton_replay_2_clicked();
 
@@ -211,17 +190,17 @@ private slots:
 
     void on_toolButton_gps_update_clicked();
 
-    void on_comboBox_code_type_currentIndexChanged(const QString &arg1);
+    //void on_comboBox_code_type_currentIndexChanged(const QString &arg1);
 
-    void on_comboBox_code_type_currentIndexChanged(int index);
+    //void on_comboBox_code_type_currentIndexChanged(int index);
 
     void on_toolButton_centerZoom_clicked();
 
-    void on_toolButton_xl_dopler_clicked();
+    //void on_toolButton_xl_dopler_clicked();
 
-    void on_toolButton_xl_dopler_toggled(bool checked);
+    //void on_toolButton_xl_dopler_toggled(bool checked);
 
-    void on_toolButton_xl_nguong_2_toggled(bool checked);
+    //void on_toolButton_xl_nguong_2_toggled(bool checked);
 
 private:
     void initActionsConnections();

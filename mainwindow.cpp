@@ -891,7 +891,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
                          dxMap,dyMap,height(),height());
     }
     //draw signal
-    DrawSignal(&p);
+    //DrawSignal(&p);
 
     DrawTarget(&p);
     //drawAisTarget(&p);
@@ -969,8 +969,8 @@ void Mainwindow::SaveBinFile()
 void Mainwindow::InitSetting()
 {
     QRect rec = QApplication::desktop()->screenGeometry(0);
-    setFixedSize(1920, 1080);
-    if((rec.height()==1080)&&(rec.width()==1920))
+    setFixedSize(1500, 950);
+    /*if((rec.height()==1080)&&(rec.width()==1920))
     {
         this->showFullScreen();
         this->setGeometry(QApplication::desktop()->screenGeometry(0));//show on first screen
@@ -987,7 +987,7 @@ void Mainwindow::InitSetting()
             //setFixedSize(QApplication::desktop()->screenGeometry(1));
         }
 
-    }
+    }*/
     mousePointerX = width()/2;
     mousePointerY = height()/2;
     dxMax = height()/4-10;
@@ -995,10 +995,10 @@ void Mainwindow::InitSetting()
     processing->radarData->setTrueN(config.m_config.trueN);
     //ui->horizontalSlider_2->setValue(config.m_config.cfarThresh);
 
-    ui->horizontalSlider_brightness->setValue(ui->horizontalSlider_brightness->maximum()/4);
-    ui->horizontalSlider_gain->setValue(ui->horizontalSlider_gain->maximum());
-    ui->horizontalSlider_rain->setValue(ui->horizontalSlider_rain->minimum());
-    ui->horizontalSlider_sea->setValue(ui->horizontalSlider_sea->minimum());
+    //ui->horizontalSlider_brightness->setValue(ui->horizontalSlider_brightness->maximum()/4);
+    //ui->horizontalSlider_gain->setValue(ui->horizontalSlider_gain->maximum());
+    //ui->horizontalSlider_rain->setValue(ui->horizontalSlider_rain->minimum());
+    //ui->horizontalSlider_sea->setValue(ui->horizontalSlider_sea->minimum());
     //ui->tabWidget_2->processing = processing;
     //ui->horizontalSlider_signal_scale->setValue(ui->horizontalSlider_sea->minimum());
     ui->comboBox_radar_resolution->setCurrentIndex(0);
@@ -1030,7 +1030,7 @@ void Mainwindow::ReloadSetting()
 
 
 
-        scrCtX = height()/2+50;//+ ui->toolBar_Main->width()+20;//ENVDEP
+        scrCtX = height()/2;//+ ui->toolBar_Main->width()+20;//ENVDEP
         scrCtY = height()/2;
 
 
@@ -1280,7 +1280,8 @@ void Mainwindow::InitNetwork()
             }
         }
         udpSendSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 10);
-
+        tcpSender = new QTcpSocket(this);
+        tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());
 //    udpARPA = new QUdpSocket(this);
 //    udpARPA->bind(1990,QUdpSocket::ShareAddress);
 //    connect(udpARPA, SIGNAL(readyRead()),
@@ -1424,12 +1425,12 @@ void Mainwindow::on_actionConnect_triggered()
 void Mainwindow::sync1()//period 1 second
 {
     // display radar temperature:
-    ui->label_temp->setText(QString::number(processing->radarData->tempType)+"|"+QString::number(processing->radarData->temp)+"\260C");
+    //ui->label_temp->setText(QString::number(processing->radarData->tempType)+"|"+QString::number(processing->radarData->temp)+"\260C");
 //    int n = 32*256.0f/((processing->radarData->noise_level[0]*256 + processing->radarData->noise_level[1]));
 //    int m = 256.0f*((processing->radarData->noise_level[2]*256 + processing->radarData->noise_level[3]))
 //            /((processing->radarData->noise_level[4]*256 + processing->radarData->noise_level[5]));
-    QByteArray array(processing->radarData->getFeedback(), 8);
-    ui->label_command->setText(QString(array.toHex()));
+    //QByteArray array(processing->radarData->getFeedback(), 8);
+    //ui->label_command->setText(QString(array.toHex()));
     //display target list:
     /*for(uint i=0;i<processing->radarData->mTrackList.size();i++)
     {
@@ -1486,99 +1487,14 @@ void Mainwindow::sync1()//period 1 second
     //display time
     showTime();
     // require temperature
-    if(radar_state!=DISCONNECTED)
-    {
-        unsigned char bytes[8];
-        bytes[0] = 0xaa;
-        bytes[1] = 0xab;
-        bytes[2] = ui->comboBox_temp_type->currentIndex();
-        bytes[3] = 0xaa;
-        bytes[4] = 0x00;
-        bytes[5] = 0x00;
-        bytes[6] = 0x00;
-        bytes[7] = 0;
-        sendToRadar(&bytes[0]);
-        //udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-    }
+
     //display radar state
-    switch(radar_state)
-    {
-    case DISCONNECTED:
 
-        break;
-    case CONNECTED:
-        ui->label_status->setText(QString::number(processing->radarData->overload));
-        if(processing->radarData->rotation_speed)
-        {
-            ui->toolButton_scan->setChecked(true);
 
-            if(processing->radarData->rotation_speed==1)ui->label_speed->setText("9 v/p");
-            else if(processing->radarData->rotation_speed==2)ui->label_speed->setText("12 v/p");
-        }
-        else
-        {
-            ui->toolButton_scan->setChecked(false);
-            ui->label_speed->setText("0 v/p");
-        }
-        switch((processing->radarData->sn_stat>>8))
-        {
-        case 0 :
-            ui->label_sn_type->setText(QString::fromUtf8("Xung đơn"));
-            break;
-        case 1 :
-            ui->label_sn_type->setText(QString::fromUtf8("Mã Baker"));
-            break;
-        case 2 :
-            ui->label_sn_type->setText(QString::fromUtf8("Mã M"));
-            break;
-        case 3 :
-            ui->label_sn_type->setText(QString::fromUtf8("Mã NN"));
-            break;
-
-        default:
-            ui->label_sn_type->setText(QString::fromUtf8("Mã DTTT"));
-            break;
-            //ui->label_sn_type->setText(QString::number(processing->radarData->sn_stat&0x07));
-
-        }
-
-        ui->label_sn_param->setText(QString::number((processing->radarData->sn_stat)&0xff));
-        break;
-    case CONNECTED_ROTATE12_TXON:
-        ui->label_status->setText(QString::fromUtf8("Phát 12v/p"));
-        break;
-    case CONNECTED_ROTATE12_TXOFF:
-        ui->label_status->setText(QString::fromUtf8("Quay 12v/p"));
-        break;
-    }
 }
 void Mainwindow::setRadarState(radarSate radarState)
 {
-    if(radarState != radar_state)
-    {
-        radar_state = radarState;
-        switch(radar_state)
-        {
-        case DISCONNECTED:
-            ui->label_status->setText(QString::fromUtf8("Chưa kết nối"));
-            ui->toolButton_tx->hide();
-            ui->toolButton_scan->hide();
-            break;
-        case CONNECTED:
-            ui->label_status->setText(QString::number(processing->radarData->overload));
-            ui->label_sn_type->setText(QString::number(processing->radarData->sn_stat&0x07));
-            ui->label_sn_param->setText(QString::number((processing->radarData->sn_stat>>3)&0x07));
-            ui->toolButton_tx->show();
-            ui->toolButton_scan->show();
-            break;
-        case CONNECTED_ROTATE12_TXON:
-            ui->label_status->setText(QString::fromUtf8("Phát 12v/p"));
-            break;
-        case CONNECTED_ROTATE12_TXOFF:
-            ui->label_status->setText(QString::fromUtf8("Quay 12v/p"));
-            break;
-        }
-    }
+
 }
 
 void Mainwindow::on_actionTx_On_triggered()
@@ -1790,10 +1706,7 @@ void Mainwindow::on_comboBox_temp_type_currentIndexChanged(int index)
 
 //}
 
-void Mainwindow::on_horizontalSlider_brightness_valueChanged(int value)
-{
-    processing->radarData->brightness = 0.5f+(float)value/ ui->horizontalSlider_brightness->maximum()*4.0f;
-}
+
 
 /*void MainWindow::on_horizontalSlider_3_valueChanged(int value)
 {
@@ -2049,56 +1962,7 @@ void Mainwindow::setCodeType(short index)// chuyen ma
 
 
 
-void Mainwindow::on_horizontalSlider_gain_valueChanged(int value)
-{
-    processing->radarData->kgain = 7-(float)value/(ui->horizontalSlider_gain->maximum())*10;
-    //printf("processing->radarData->kgain %f \n",processing->radarData->kgain);
-}
 
-void Mainwindow::on_horizontalSlider_rain_valueChanged(int value)
-{
-    processing->radarData->krain = (float)value/(ui->horizontalSlider_rain->maximum()+ui->horizontalSlider_rain->maximum()/3);
-}
-
-void Mainwindow::on_horizontalSlider_sea_valueChanged(int value)
-{
-    processing->radarData->ksea = (float)value/(ui->horizontalSlider_sea->maximum());
-}
-
-
-/*
-void MainWindow::on_pushButton_loadAis_clicked()
-{
-    QString filename = QFileDialog::getOpenFileName(this,    QString::fromUtf8("M? file "), NULL, tr("ISM file (*.txt)"));
-    if(!filename.size())return;
-    QFile gpsfile( filename);
-    if (!gpsfile.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        return ;
-    }
-    QTextStream in(&gpsfile);
-    QString line ;int k=0;
-    line = in.readLine();
-
-    while(!in.atEnd()) {
-        //printf((char*)line.data());
-        QStringList  list = line.split(",");
-
-        if (list[0] == "$GPRMC")
-        {
-
-            float mlat = (*(list.begin()+3)).toFloat()/100.0f +0.0097;
-            float mlong = (*(list.begin()+5)).toFloat()/100.0f + 0.355;
-            arpa_data.addAIS(list[0].toStdString(),mlat,mlong,0,0);
-
-        }line = in.readLine();
-        k=list.size();
-        //printf("size:%d",arpa_data.ais_track_list[0].id.data());
-    }
-
-}
-
-*/
 
 
 void Mainwindow::on_toolButton_exit_clicked()
@@ -2111,92 +1975,6 @@ void Mainwindow::on_toolButton_exit_clicked()
 //    this->on_actionSetting_triggered();
 //}
 
-void Mainwindow::on_toolButton_scan_clicked()
-{
-
-}
-
-void Mainwindow::on_toolButton_tx_toggled(bool checked)
-{
-
-    if(checked)
-
-    {   //0xaa,0xab,0x00,0x01,0x00,0x00,0x00
-        unsigned char        bytes[8] = {0xaa,0xab,0x02,0x01,0x00,0x00,0x00};
-        udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-        bytes[2] = 0x00;//{0xaa,0xab,0x00,0x01,0x00,0x00,0x00};
-        udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-        //ui->toolButton_tx->setChecked(false);
-    }
-    else
-    {
-
-        unsigned char        bytes[8] = {0xaa,0xab,0x02,0x00,0x00,0x00,0x00};
-        udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-        bytes[2] = 0x00;// = {0xaa,0xab,0x00,0x01,0x00,0x00,0x00};
-        udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-        //ui->toolButton_tx->setChecked(true);
-    }
-
-}
-
-void Mainwindow::on_toolButton_scan_toggled(bool checked)
-{
-    if(checked)
-    {
-        unsigned char        bytes[8] = {0xaa,0xab,0x03,0x02,0x00,0x00,0x00};
-        udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-
-    }
-    else
-    {
-        unsigned char        bytes[8] = {0xaa,0xab,0x03,0x00,0x00,0x00,0x00};
-        udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
-
-    }
-
-}
-
-
-void Mainwindow::on_toolButton_xl_nguong_toggled(bool checked)
-{
-    processing->radarData->xl_nguong = checked;
-}
-
-void Mainwindow::on_toolButton_replay_toggled(bool checked)
-{
-    this->on_actionPlayPause_toggled(checked);
-}
-
-
-void Mainwindow::on_toolButton_replay_fast_toggled(bool checked)
-{
-    if(checked)
-    {
-        processing->playRate = 300;
-    }else
-    {
-        processing->playRate = 80;
-    }
-}
-
-void Mainwindow::on_toolButton_record_toggled(bool checked)
-{
-    this->on_actionRecording_toggled(checked);
-}
-
-void Mainwindow::on_toolButton_open_record_clicked()
-{
-    this->on_actionOpen_rec_file_triggered();
-}
-
-
-
-void Mainwindow::on_toolButton_alphaView_toggled(bool checked)
-{
-    displayAlpha = checked;
-    processing->radarData->isDisplayAlpha = checked;
-}
 
 
 
@@ -2334,33 +2112,9 @@ void Mainwindow::on_toolButton_gps_update_clicked()
     SetGPS(ui->text_latInput_2->text().toFloat(),ui->text_longInput_2->text().toFloat());
 }
 
-void Mainwindow::on_comboBox_code_type_currentIndexChanged(const QString &arg1)
-{
-
-}
-
-void Mainwindow::on_comboBox_code_type_currentIndexChanged(int index)
-{
-    config.m_config.codeType = index;
-    setCodeType(config.m_config.codeType);
-}
 
 void Mainwindow::on_toolButton_centerZoom_clicked()
 {
     processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
 }
 
-void Mainwindow::on_toolButton_xl_dopler_clicked()
-{
-
-}
-
-void Mainwindow::on_toolButton_xl_dopler_toggled(bool checked)
-{
-    processing->radarData->xl_dopler = checked;
-}
-
-void Mainwindow::on_toolButton_xl_nguong_2_toggled(bool checked)
-{
-    processing->radarData->bo_bang_0 = checked;
-}
