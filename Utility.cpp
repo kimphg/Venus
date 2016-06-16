@@ -1,4 +1,3 @@
-//#include "stdafx.h"
 #include "utility.h"
 
 
@@ -306,7 +305,7 @@ void utl_IndexNewDir(char *ioNewDirPath)
 		strcpy_s(sBufferPath, dirCandidate);	
 		itoa(i, strIndex, 10);
 		strcat(sBufferPath, strIndex);	
-        existFlag = NULL;// _chdir(sBufferPath);
+		existFlag = _chdir(sBufferPath);
 		i++;
 	}while( existFlag == 0);
 

@@ -2121,7 +2121,5 @@ void Mainwindow::on_toolButton_centerZoom_clicked()
 
 void Mainwindow::on_toolButton_centerView_2_clicked()
 {
-    CTracker tracker;
 
-    printf("sss");
 }

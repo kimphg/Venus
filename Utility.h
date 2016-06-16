@@ -1,5 +1,4 @@
-#ifndef UTILITY_H
-#define UTILITY_H
+#pragma once
 #include <windows.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,8 +7,8 @@
 #include "math.h"
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
-//#include "opencv2/opencv.hpp"
-//#include "opencv2/core/core.hpp"
+#include "opencv2/opencv.hpp"
+#include "opencv2/core/core.hpp"
 #include <DIRECT.H>
 
 //general auxillary fuction
@@ -62,4 +61,3 @@ typedef struct TrkResult
 	int			axisB; //ellipse axis B
 	double		angle; //ellipse angle
 } TrkResult;
-#endif

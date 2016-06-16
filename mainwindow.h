@@ -22,7 +22,6 @@
 #include <QImage>
 #include <QTcpSocket>
 #include <QHostAddress>
-#include <ctracker.h>
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
 //#include <QtSerialPort/QSerialPort>
