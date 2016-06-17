@@ -21,6 +21,7 @@ QTimer*                     dataPlaybackTimer ;
 QThread*                    t,*t1 ;
 CvCapture                   *g_Capture = NULL;
 IplImage                    *g_TrueFrame = NULL;
+IplImage                    *g_Frame = NULL;
 bool displayAlpha = false;
 //static short                currMaxRange = RADAR_MAX_RESOLUTION;
 static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
@@ -2332,20 +2333,24 @@ void Mainwindow::on_toolButton_centerView_2_clicked()
     g_Capture = cvCaptureFromCAM(0);
     if (!g_Capture)
         return;
+    g_TrueFrame = cvQueryFrame(g_Capture);
+    g_Frame = cvCreateImage(cvSize(800, 600), g_TrueFrame->depth, g_TrueFrame->nChannels);
+
 }
 bool ir = false;
 void Mainwindow::ShowVideoCam()
 {    
     if (!g_Capture)
         return;
-//    uchar **data;
+
     g_TrueFrame = cvQueryFrame(g_Capture);
 
     if (g_TrueFrame)
     {
-        //if(img)img->re
-        if(qImageBuffer)delete qImageBuffer;
-        img = IplImageToQImage(g_TrueFrame,NULL,0,255);
+        cvResize(g_TrueFrame, g_Frame);
+        if(qImageBuffer)
+            delete qImageBuffer;
+        img = IplImageToQImage(g_Frame,NULL,0,255);
     }
 }
 
