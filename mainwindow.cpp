@@ -510,7 +510,7 @@ void Mainwindow::DrawMap()
                 p.setPen(pen);
                 p.drawPolygon(poly);
             }
-        }else if(false)
+        }else
         {
             //pen.setColor(color[i]);
             if(i==3)pen.setWidth(2);else pen.setWidth(1);
@@ -2121,5 +2121,33 @@ void Mainwindow::on_toolButton_centerZoom_clicked()
 
 void Mainwindow::on_toolButton_centerView_2_clicked()
 {
+    g_Capture = cvCaptureFromCAM(0);
+    if (!g_Capture)
+        return;
+
+    ShowVideoCam();
 
 }
+
+void Mainwindow::ShowVideoCam()
+{
+    cvNamedWindow("Video", 0);
+    g_TrueFrame = cvQueryFrame(g_Capture);
+    if (!g_TrueFrame)
+            return;
+
+    for(;;)
+    {
+        g_TrueFrame = cvQueryFrame(g_Capture);
+        if (!g_TrueFrame)
+                    break;
+
+        cvShowImage("Video", g_TrueFrame);
+        if (cvWaitKey(1) == 0)
+                    break;
+    }
+
+    cvReleaseCapture(&g_Capture);
+    cvReleaseImage(&g_TrueFrame);
+}
+

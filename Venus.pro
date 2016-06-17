@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     qcustomcombobox.cpp \
     qcustomgroupbox.cpp \
     qcustomtabwidget.cpp \
-    Utility.cpp
+    Utility.cpp \
+    Tracker.cpp
 HEADERS  += mainwindow.h \
     vnmap.h \
     Config.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     qcustomcombobox.h \
     qcustomgroupbox.h \
     qcustomtabwidget.h \
-    Utility.h
+    Utility.h \
+    Tracker.h
 
 FORMS    += mainwindow.ui \
     gpsdialog.ui \

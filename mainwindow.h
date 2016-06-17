@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define _CRT_SECURE_NO_WARNINGS
 #define STR_RADAR_NOT_CONNECTED QString::fromUtf8("Chưa kết nối")
 #define STR_RADAR_CONNECTED     QString::fromUtf8("Đã kết nối")
 #define STR_RADAR_TRANSMITING   QString::fromUtf8("Đang phát")
@@ -22,6 +21,8 @@
 #include <QImage>
 #include <QTcpSocket>
 #include <QHostAddress>
+
+#include "Tracker.h"
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
 //#include <QtSerialPort/QSerialPort>
@@ -83,6 +84,10 @@ private:
     QPoint          view_pos;
     CConfig         config;
 
+    CvCapture*		g_Capture;
+    IplImage*		g_TrueFrame;
+
+
     bool LoadISMapFile();
     void SaveBinFile();
     void InitNetwork();
@@ -97,6 +102,8 @@ private:
     void ReloadSetting();
     void SendCommandControl();
     void SetGPS(float mlat,float mlong);
+
+    void ShowVideoCam();
 public slots:
     void UpdateSetting();
 //    void UpdateSignScale();
