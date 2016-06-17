@@ -926,7 +926,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw frame
 
     DrawViewFrame(&p);
-    if(ui->tabWidget_2->currentIndex()==2&&(img))
+    if(ui->tabWidget_2->currentIndex()>=2&&(img))
     {
         //QMutexLocker locker(&mutex);
         QRect rect = ui->tabWidget_2->geometry();
