@@ -15,10 +15,12 @@ static QPixmap              *pMap=NULL;
 //static QImage               *sgn_img = new QImage(RADAR_MAX_RESOLUTION*2,RADAR_MAX_RESOLUTION*2,QImage::Format_RGB32);
 dataProcessingThread *processing;
 static Q_vnmap              vnmap;
-QTimer*                     scrUpdateTimer,*readBuffTimer ;
+QTimer*                     scrUpdateTimer,*readBuffTimer, *videoTimer;
 QTimer*                     syncTimer1s ;
 QTimer*                     dataPlaybackTimer ;
 QThread*                    t,*t1 ;
+CvCapture                   *g_Capture = NULL;
+IplImage                    *g_TrueFrame = NULL;
 bool displayAlpha = false;
 //static short                currMaxRange = RADAR_MAX_RESOLUTION;
 static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
@@ -32,7 +34,9 @@ static char                 gridOff = false;
 static char                 udpFailure = 0;//config file !!!
 static bool                 isScreenUp2Date,isSettingUp2Date,isDraging = false;
 static bool                 isScaleChanged =true;
-QImage *img;
+
+QMutex                      mutex;
+QImage *img = NULL;
 static QStandardItemModel   modelTargetList;
 enum drawModes{
     SGN_DIRECT_DRAW,SGN_IMG_DRAW,NOTERR_DRAW
@@ -922,15 +926,16 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw frame
 
     DrawViewFrame(&p);
-    if(ui->tabWidget_2->currentIndex()==2)
+    if(ui->tabWidget_2->currentIndex()==2&&(img))
     {
+        //QMutexLocker locker(&mutex);
         QRect rect = ui->tabWidget_2->geometry();
         //QRect zoomRect(DISPLAY_RES-100,DISPLAY_RES-100,200,200);
         rect.adjust(4,30,-5,-5);
         p.setPen(QPen(Qt::black));
         p.setBrush(QBrush(Qt::black));
         p.drawRect(rect);
-        p.drawImage(rect,*img,img->rect());
+        p.drawImage(rect,*img,img->rect());        
     }
 }
 //void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -970,8 +975,8 @@ void Mainwindow::SaveBinFile()
 void Mainwindow::InitSetting()
 {
     QRect rec = QApplication::desktop()->screenGeometry(0);
-    setFixedSize(1500, 950);
-    /*if((rec.height()==1080)&&(rec.width()==1920))
+    setFixedSize(1920, 1080);
+    if((rec.height()==1080)&&(rec.width()==1920))
     {
         this->showFullScreen();
         this->setGeometry(QApplication::desktop()->screenGeometry(0));//show on first screen
@@ -988,7 +993,7 @@ void Mainwindow::InitSetting()
             //setFixedSize(QApplication::desktop()->screenGeometry(1));
         }
 
-    }*/
+    }
     mousePointerX = width()/2;
     mousePointerY = height()/2;
     dxMax = height()/4-10;
@@ -1003,7 +1008,7 @@ void Mainwindow::InitSetting()
     //ui->tabWidget_2->processing = processing;
     //ui->horizontalSlider_signal_scale->setValue(ui->horizontalSlider_sea->minimum());
     ui->comboBox_radar_resolution->setCurrentIndex(0);
-    setCursor(QCursor(Qt::CrossCursor));
+    //setCursor(QCursor(Qt::CrossCursor));
     range = 6; UpdateScale();
     if(true)
     {
@@ -1026,10 +1031,6 @@ void Mainwindow::InitSetting()
 }
 void Mainwindow::ReloadSetting()
 {
-
-
-
-
 
         scrCtX = height()/2;//+ ui->toolBar_Main->width()+20;//ENVDEP
         scrCtY = height()/2;
@@ -1233,6 +1234,7 @@ void Mainwindow::InitTimer()
     syncTimer1s = new QTimer();
     readBuffTimer = new QTimer();
     dataPlaybackTimer = new QTimer();
+    videoTimer  = new QTimer();
     t = new QThread();
     t1 = new QThread();
 //    connect(fullScreenTimer, SIGNAL(timeout()), this, SLOT(UpdateSetting()));
@@ -1258,6 +1260,9 @@ void Mainwindow::InitTimer()
     connect(t,SIGNAL(finished()),t,SLOT(deleteLater()));
     t->start(QThread::TimeCriticalPriority);
     t1->start(QThread::TimeCriticalPriority);
+
+    connect(videoTimer, SIGNAL(timeout()), this, SLOT(ShowVideoCam()));
+    videoTimer->start(30);
 }
 void Mainwindow::InitNetwork()
 {
@@ -1396,14 +1401,8 @@ void MainWindow::sendFrame(const char* hexdata,QHostAddress host,int port )
 */
 void Mainwindow::on_actionExit_triggered()
 {
-//    OnExitDialog *dlg = new OnExitDialog(this);
-//    dlg->setModal(true);
-//    dlg->setAttribute(Qt::WA_DeleteOnClose);
-//    //dlg->setWindowFlags(Qt::WindowMinMaxButtonsHint);
-//    dlg->show();
 
-//    connect(dlg, SIGNAL(accepted()),this, SLOT(ExitProgram()));
-//    //
+    cvReleaseCapture(&g_Capture);
     processing->stopThread();
     processing->wait();
     ExitProgram();
@@ -2119,19 +2118,11 @@ void Mainwindow::on_toolButton_centerZoom_clicked()
     processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
 }
 
+uchar *qImageBuffer = NULL;
 
-void Mainwindow::on_toolButton_centerView_2_clicked()
-{
-    g_Capture = cvCaptureFromCAM(0);
-    if (!g_Capture)
-        return;
-
-    ShowVideoCam();
-
-}
 QImage *IplImageToQImage(const IplImage * iplImage, uchar **data, double mini, double maxi)
 {
-    uchar *qImageBuffer = NULL;
+
     int width = iplImage->width;
     int widthStep = iplImage->widthStep;
     int height = iplImage->height;
@@ -2328,32 +2319,41 @@ QImage *IplImageToQImage(const IplImage * iplImage, uchar **data, double mini, d
     }
     else
     {
+        //if(qImage)delete qImage;
         qImage = new QImage(qImageBuffer, width, height, QImage::Format_RGB32);
+
     }
     //*data = qImageBuffer;
     return qImage;
 }
-void Mainwindow::ShowVideoCam()
+
+void Mainwindow::on_toolButton_centerView_2_clicked()
 {
-    cvNamedWindow("Video", 0);
+    g_Capture = cvCaptureFromCAM(0);
+    if (!g_Capture)
+        return;
+}
+bool ir = false;
+void Mainwindow::ShowVideoCam()
+{    
+    if (!g_Capture)
+        return;
+//    uchar **data;
     g_TrueFrame = cvQueryFrame(g_Capture);
 
-    if (!g_TrueFrame)
-            return;
-
-    for(;;)
+    if (g_TrueFrame)
     {
-        g_TrueFrame = cvQueryFrame(g_Capture);
-        if (!g_TrueFrame)
-                    break;
+        //if(img)img->re
+        if(qImageBuffer)delete qImageBuffer;
         img = IplImageToQImage(g_TrueFrame,NULL,0,255);
-        repaint();
-        //cvShowImage("Video", g_TrueFrame);
-        if (cvWaitKey(1) == 0)
-                    break;
     }
-
-    cvReleaseCapture(&g_Capture);
-    cvReleaseImage(&g_TrueFrame);
 }
 
+
+void Mainwindow::on_tabWidget_2_currentChanged(int index)
+{
+    // 2: capture Daylight
+    // 3: capture IR
+    // other: do nothing
+    return;
+}

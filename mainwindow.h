@@ -84,8 +84,7 @@ private:
     QPoint          view_pos;
     CConfig         config;
 
-    CvCapture*		g_Capture;
-    IplImage*		g_TrueFrame;
+
 
 
     bool LoadISMapFile();
@@ -103,7 +102,7 @@ private:
     void SendCommandControl();
     void SetGPS(float mlat,float mlong);
 
-    void ShowVideoCam();
+
 public slots:
     void UpdateSetting();
 //    void UpdateSignScale();
@@ -114,6 +113,7 @@ private:
 public:
     void setScaleNM(unsigned short rangeNM);
 private slots:
+    void ShowVideoCam();
     void readBuffer();
     void sync1();
     void ExitProgram();
@@ -210,6 +210,10 @@ private slots:
     //void on_toolButton_xl_nguong_2_toggled(bool checked);
 
     void on_toolButton_centerView_2_clicked();
+
+
+
+    void on_tabWidget_2_currentChanged(int index);
 
 private:
     void initActionsConnections();
