@@ -53,6 +53,7 @@ public:
     CTracker();
     void TrackNextFrame(IplImage* inImg, RECT inStartBox, TrkResult *outResult);
     void InitForFirstFrame(IplImage* imgInput, CvRect CvRectInput);
+    void InitForFirstFrame1(IplImage* imgInput, RECT rectInput);
 private:
     void GenColorFeatures();
     void GetImageWidthHeightXY(IplImage* imgInput);

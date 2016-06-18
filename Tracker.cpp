@@ -710,3 +710,37 @@ void CTracker::InitForFirstFrame(IplImage* imgInput, CvRect CvRectInput)
 
     cvReleaseImage(&m_pImgCurrent);
 }
+
+void CTracker::InitForFirstFrame1(IplImage* imgInput, RECT rectInput)
+{
+    GetImageWidthHeightXY(imgInput);
+    //mean shift track image with half size
+    m_pImgCurrentHalf = cvCreateImage(cvSize(m_ImageMaxX/2, m_ImageMaxY/2), 8, 3);
+    //mask image
+    gImgInitMaskHalf = cvCreateImage(cvSize(m_ImageMaxX/2, m_ImageMaxY/2), 8, 1);
+    gImgInitMask = cvCreateImage(cvSize(m_ImageMaxX, m_ImageMaxY), 8, 1);
+
+    m_RectInit.top      = rectInput.top;
+    m_RectInit.bottom   = rectInput.bottom;
+    m_RectInit.left     = rectInput.left;
+    m_RectInit.right    = rectInput.right;
+
+    m_RectCurrent.top      = rectInput.top;
+    m_RectCurrent.bottom   = rectInput.bottom;
+    m_RectCurrent.left     = rectInput.left;
+    m_RectCurrent.right    = rectInput.right;
+
+    m_pImgCurrent = cvCloneImage(imgInput);
+
+    //get half image for processing
+    if (m_pImgCurrent != NULL)
+    {
+        cvResize(m_pImgCurrent, m_pImgCurrentHalf, CV_INTER_LINEAR);
+    }
+    // Get Init mask
+    GetInitMask();
+
+    TrackInit(m_pImgCurrentHalf, gImgInitMaskHalf, gRectCurrentHalf);
+
+    cvReleaseImage(&m_pImgCurrent);
+}

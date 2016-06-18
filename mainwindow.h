@@ -101,6 +101,7 @@ private:
     void ReloadSetting();
     void SendCommandControl();
     void SetGPS(float mlat,float mlong);
+    void StartTracking(RECT inputRECT);
 
 
 public slots:

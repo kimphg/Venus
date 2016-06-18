@@ -22,6 +22,12 @@ QThread*                    t,*t1 ;
 CvCapture                   *g_Capture = NULL;
 IplImage                    *g_TrueFrame = NULL;
 IplImage                    *g_Frame = NULL;
+IplImage                    *g_FrameHalf = NULL;
+RECT                        g_RECT = {0, 0, 0, 0};
+bool                        g_IsTracking = false;
+CTracker                    g_Tracker;
+
+
 bool displayAlpha = false;
 //static short                currMaxRange = RADAR_MAX_RESOLUTION;
 static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
@@ -1961,13 +1967,12 @@ void Mainwindow::setCodeType(short index)// chuyen ma
 
 //}
 
-
-
-
-
-
 void Mainwindow::on_toolButton_exit_clicked()
 {
+    cvReleaseCapture(&g_Capture);
+    g_Capture = NULL;
+    close();
+    qApp->quit();
     on_actionExit_triggered();
 }
 
@@ -2345,20 +2350,60 @@ void Mainwindow::ShowVideoCam()
 
     g_TrueFrame = cvQueryFrame(g_Capture);
 
-    if (g_TrueFrame)
-    {
-        cvResize(g_TrueFrame, g_Frame);
-        if(qImageBuffer)
-            delete qImageBuffer;
-        img = IplImageToQImage(g_Frame,NULL,0,255);
-    }
+    if (!g_TrueFrame)
+        return;
+
+     cvResize(g_TrueFrame, g_Frame);
+
+     if (g_IsTracking) // if tracking opt is ON
+     {
+         cvResize(g_Frame, g_FrameHalf, CV_INTER_LINEAR); // g_FrameHalf is initial when StartTracking function is called
+         g_Tracker.TrackNextFrame(g_FrameHalf, g_Tracker.gRectCurrentHalf, &g_Tracker.m_TrkResult);
+         g_Tracker.gRectCurrentHalf = g_Tracker.m_TrkResult.targetBox;
+         utl_RectCheckBound(&g_Tracker.gRectCurrentHalf, g_Tracker.m_ImageMaxX/2, g_Tracker.m_ImageMaxY/2);
+
+         //update full size RECT for display
+         g_Tracker.m_RectCurrent.left	= g_Tracker.gRectCurrentHalf.left*2;
+         g_Tracker.m_RectCurrent.top	= g_Tracker.gRectCurrentHalf.top*2;
+         g_Tracker.m_RectCurrent.right	= g_Tracker.gRectCurrentHalf.right*2;
+         g_Tracker.m_RectCurrent.bottom	= g_Tracker.gRectCurrentHalf.bottom*2;
+     }
+
+     if(qImageBuffer)
+         delete qImageBuffer;
+     img = IplImageToQImage(g_Frame,NULL,0,255);
+
 }
 
 
 void Mainwindow::on_tabWidget_2_currentChanged(int index)
 {
+    switch (index)
+    {
+    case 2:
+        g_Capture = cvCaptureFromCAM(0);
+        if (!g_Capture)
+            return;
+        g_TrueFrame = cvQueryFrame(g_Capture);
+        g_Frame = cvCreateImage(cvSize(800, 600), g_TrueFrame->depth, g_TrueFrame->nChannels);
+        break;
+    case 3:
+        break;
+
+    }
     // 2: capture Daylight
     // 3: capture IR
     // other: do nothing
     return;
+}
+
+
+void Mainwindow::StartTracking(RECT inputRECT)
+{
+    if (!g_Frame)
+        return;
+
+    g_Tracker.InitForFirstFrame1(g_Frame, inputRECT);
+    g_FrameHalf = cvCreateImage(cvSize(g_Tracker.m_ImageMaxX/2, g_Tracker.m_ImageMaxY/2), 8, 3);
+
 }
