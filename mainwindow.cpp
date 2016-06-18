@@ -23,7 +23,6 @@ CvCapture                   *g_Capture = NULL;
 IplImage                    *g_TrueFrame = NULL;
 IplImage                    *g_Frame = NULL;
 IplImage                    *g_FrameHalf = NULL;
-RECT                        g_RECT = {0, 0, 0, 0};
 bool                        g_IsTracking = false;
 CTracker                    g_Tracker;
 
@@ -2405,5 +2404,6 @@ void Mainwindow::StartTracking(RECT inputRECT)
 
     g_Tracker.InitForFirstFrame1(g_Frame, inputRECT);
     g_FrameHalf = cvCreateImage(cvSize(g_Tracker.m_ImageMaxX/2, g_Tracker.m_ImageMaxY/2), 8, 3);
+    g_IsTracking = true;
 
 }

@@ -720,6 +720,7 @@ void CTracker::InitForFirstFrame1(IplImage* imgInput, RECT rectInput)
     gImgInitMaskHalf = cvCreateImage(cvSize(m_ImageMaxX/2, m_ImageMaxY/2), 8, 1);
     gImgInitMask = cvCreateImage(cvSize(m_ImageMaxX, m_ImageMaxY), 8, 1);
 
+
     m_RectInit.top      = rectInput.top;
     m_RectInit.bottom   = rectInput.bottom;
     m_RectInit.left     = rectInput.left;
