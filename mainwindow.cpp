@@ -1268,7 +1268,8 @@ void Mainwindow::InitTimer()
     t1->start(QThread::TimeCriticalPriority);
 
     connect(videoTimer, SIGNAL(timeout()), this, SLOT(ShowVideoCam()));
-    videoTimer->start(30);
+    //videoTimer->start(30);
+
 }
 void Mainwindow::InitNetwork()
 {
@@ -2334,18 +2335,23 @@ QImage *IplImageToQImage(const IplImage * iplImage, uchar **data, double mini, d
 
 void Mainwindow::on_toolButton_centerView_2_clicked()
 {
-    g_Capture = cvCaptureFromCAM(0);
-    if (!g_Capture)
-        return;
-    g_TrueFrame = cvQueryFrame(g_Capture);
-    g_Frame = cvCreateImage(cvSize(800, 600), g_TrueFrame->depth, g_TrueFrame->nChannels);
+//    g_Capture = cvCaptureFromCAM(0);
+//    if (!g_Capture)
+//        return;
+//    g_TrueFrame = cvQueryFrame(g_Capture);
+//    g_Frame = cvCreateImage(cvSize(800, 600), g_TrueFrame->depth, g_TrueFrame->nChannels);
 
 }
-bool ir = false;
+
 void Mainwindow::ShowVideoCam()
-{    
+{
+    if (g_Capture ==  NULL)
+        g_Capture = cvCaptureFromCAM(0);
+        //g_Capture = cvCaptureFromFile("Camera URL");
     if (!g_Capture)
         return;
+    if (g_Frame == NULL)
+        g_Frame = cvCreateImage(cvSize(800, 600), 8, 3);
 
     g_TrueFrame = cvQueryFrame(g_Capture);
 
@@ -2377,22 +2383,34 @@ void Mainwindow::ShowVideoCam()
 
 void Mainwindow::on_tabWidget_2_currentChanged(int index)
 {
-    switch (index)
-    {
-    case 2:
-        g_Capture = cvCaptureFromCAM(0);
-        if (!g_Capture)
-            return;
-        g_TrueFrame = cvQueryFrame(g_Capture);
-        g_Frame = cvCreateImage(cvSize(800, 600), g_TrueFrame->depth, g_TrueFrame->nChannels);
-        break;
-    case 3:
-        break;
-
-    }
     // 2: capture Daylight
     // 3: capture IR
     // other: do nothing
+
+    switch (index)
+    {
+    case 2:
+        videoTimer->stop();
+        cvReleaseCapture(&g_Capture);
+        g_Capture = NULL;
+        g_IsTracking = false;
+        // change url string for capture video
+        //......
+        videoTimer->start(40);
+
+        break;
+    case 3:
+        videoTimer->stop();
+        cvReleaseCapture(&g_Capture);
+        g_Capture = NULL;
+        g_IsTracking = false;
+        // change url string for capture video
+        //......
+        //videoTimer->start(40);
+        break;
+
+    }
+
     return;
 }
 
