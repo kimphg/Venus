@@ -21,7 +21,7 @@
 #include <QImage>
 #include <QTcpSocket>
 #include <QHostAddress>
-
+#include "ctarget.h"
 #include "Tracker.h"
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
@@ -59,6 +59,7 @@ private:
     void CameraControl(int x,int y, int zoom);
     void CameraControl(int direction);
     void InitSetting();
+    void updateTargets();
     void sendToRadar(const char *hexdata);
     void sendToRadar(unsigned char* hexdata);
 //    void SetSnScale(short value);

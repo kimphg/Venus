@@ -7,9 +7,14 @@
 #define CONST_NM 1.825f
 #define CONST_PI 3.141592654f
 #define MAX_VIEW_RANGE_KM 50
-
+#define DEGREE_2_KM 111.31949079327357f
 #include <queue>
+short scrCtX, scrCtY;
+short scrCtLat, scrCtLon;
 
+
+QList<CTarget*> targetList;
+short selected_target_index = 0;
 //static bool                 isAddingTarget=false;
 static QPixmap              *pMap=NULL;
 //static QImage               *sgn_img = new QImage(RADAR_MAX_RESOLUTION*2,RADAR_MAX_RESOLUTION*2,QImage::Format_RGB32);
@@ -34,7 +39,7 @@ static short                dxMax,dyMax;
 static C_ARPA_data          arpa_data;
 //static short                curAzir=-1;//,drawAzir=0;
 static float                signsize,sn_scale;
-static short                scrCtX, scrCtY, dx =0,dy=0,dxMap=0,dyMap=0;//mouseX,mouseY;
+static short                 dx =0,dy=0,dxMap=0,dyMap=0;//mouseX,mouseY;
 static short                mousePointerX,mousePointerY;
 static char                 gridOff = false;
 static char                 udpFailure = 0;//config file !!!
@@ -183,6 +188,29 @@ void bin2hex(unsigned char byte, char* str)
         break;
     }
 
+}
+void Mainwindow::updateTargets()
+{
+    for(short i = 0;i<targetList.size();i++)
+    {
+        float x	=  - dx + scrCtX + ((targetList.at(i)->m_lon - config.m_config.m_long) * DEGREE_2_KM)*scale;// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+        float y	= - dy + scrCtY - (targetList.at(i)->m_lat - config.m_config.m_lat) * DEGREE_2_KM*scale;
+        targetList.at(i)->setPosistion(x,y);
+        if(targetList.at(i)->selected)
+        {
+            targetList.at(i)->selected = false;
+            selected_target_index = i;
+        }
+        if(selected_target_index == i)
+        {
+            ui->label_status_lat_radar->setText( QString::number(targetList.at(i)->m_lat));
+            ui->label_status_long_radar->setText(QString::number(targetList.at(i)->m_lon));
+        }
+        //printf("\nx:%f y:%f",x,y);
+    }
+    //ui->
+    //t1.setGeometry(400,400,20,20);
+    //targetList.append(t1);
 }
 
 void Mainwindow::sendToRadar(const char* hexdata)
@@ -1211,6 +1239,7 @@ void Mainwindow::UpdateRadarData()
     }
     else if(!isScreenUp2Date)
     {
+        updateTargets();
         update();
         isScreenUp2Date = true;
     }
@@ -1295,32 +1324,56 @@ void Mainwindow::InitNetwork()
         udpSendSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 10);
         tcpSender = new QTcpSocket(this);
         tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());
-//    udpARPA = new QUdpSocket(this);
-//    udpARPA->bind(1990,QUdpSocket::ShareAddress);
-//    connect(udpARPA, SIGNAL(readyRead()),
-//            this, SLOT(processARPA()));
+        udpARPA = new QUdpSocket(this);
+        udpARPA->bind(4444,QUdpSocket::ShareAddress);
+        connect(udpARPA, SIGNAL(readyRead()),
+                this, SLOT(processARPA()));
 
 }
 void Mainwindow::processARPA()
 {
-    /*
+
     while (udpARPA->hasPendingDatagrams())
     {
         QByteArray datagram;
         datagram.resize(udpARPA->pendingDatagramSize());
         udpARPA->readDatagram(datagram.data(), datagram.size());
         //printf(datagram.data());
-		QString str(datagram.data());
+        QString str(datagram.data());
         QStringList list = str.split(",");
         if(*list.begin()=="$RATTM")
         {
-            short tNum = (*(list.begin()+1)).toInt();
-            float tDistance = (*(list.begin()+2)).toFloat();
-            float tRange = (*(list.begin()+3)).toFloat();
-            arpa_data.addARPA(tNum,tDistance,tRange);
+            QString tId = (*(list.begin()+1));
+            float tRange = (*(list.begin()+2)).toFloat();
+            float tAzi = (*(list.begin()+3)).toFloat();
+
+            //arpa_data.addARPA(tNum,tDistance,tRange);
+            tAzi = PI*tAzi/180;
+
+            float tX = tRange*sinf(tAzi);
+            float tY = - tRange*cosf(tAzi);
+            float tLat = config.m_config.m_lat + tX/DEGREE_2_KM;
+            float tLon = config.m_config.m_long + tY/DEGREE_2_KM;
+            short i=0;
+            for(;i<targetList.size();i++)
+            {
+                if(targetList.at(i)->id == tId)
+                {
+                    targetList.at(i)->setCoordinates(tLat,tLon); break;
+                }
+            }
+            if(i==targetList.size())
+            {
+                CTarget*  tg1 = new CTarget(this);
+                tg1->show();
+                tg1->id = tId;
+                tg1->setCoordinates(tLat,tLon);
+                targetList.append(tg1);
+            }
+            isScreenUp2Date = false;
         }
     }
-    */
+
 }
 void Mainwindow::processFrame()
 {
@@ -2083,7 +2136,7 @@ void Mainwindow::SetGPS(float mlat,float mlong)
     config.m_config.m_long = mlong;
     ui->text_latInput_2->setText(QString::number(mlat));
     ui->text_longInput_2->setText(QString::number(mlong));
-    vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 200,config.m_config.mapFilename.data());
+    vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 100,config.m_config.mapFilename.data());
     DrawMap();
     update();
 }

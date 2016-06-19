@@ -17,7 +17,7 @@
 QT       += core gui
 QT       += network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-TARGET = Jupiter_1.1
+TARGET = Venus_1
 TEMPLATE = app
 SOURCES += main.cpp\
     mainwindow.cpp \
@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     qcustomgroupbox.cpp \
     qcustomtabwidget.cpp \
     Utility.cpp \
-    Tracker.cpp
+    Tracker.cpp \
+    ctarget.cpp
 HEADERS  += mainwindow.h \
     vnmap.h \
     Config.h \
@@ -49,7 +50,8 @@ HEADERS  += mainwindow.h \
     qcustomgroupbox.h \
     qcustomtabwidget.h \
     Utility.h \
-    Tracker.h
+    Tracker.h \
+    ctarget.h
 
 FORMS    += mainwindow.ui \
     gpsdialog.ui \
