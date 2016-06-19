@@ -1047,10 +1047,10 @@ void Mainwindow::InitSetting()
     if(true)
     {
         SetGPS(config.m_config.m_lat, config.m_config.m_long);
-        //vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 200,config.m_config.mapFilename.data());
+        vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 50,config.m_config.mapFilename.data());
         if(pMap)delete pMap;
-        if(gridOff==false)pMap = new QPixmap(height(),height());
-        else pMap = new QPixmap(width(),height());
+        pMap = new QPixmap(height(),height());
+
         DrawMap();
 
 
@@ -1835,37 +1835,38 @@ void Mainwindow::UpdateScale()
 
     {
     case 0:
-        scale = (height()/2-5)/(CONST_NM*1.5f );
-        ui->label_range->setText("1.5 NM");
+        scale = (height()/2-5)/(CONST_NM*0.5 );
+        ui->label_range->setText("0.5 NM");
         break;
     case 1:
+        scale = (height()/2-5)/(CONST_NM );
+        ui->label_range->setText("1 NM");
+        break;
+    case 2:
+        scale = (height()/2-5)/(CONST_NM*2 );
+        ui->label_range->setText("2 NM");
+        break;
+    case 3:
         scale = (height()/2-5)/(CONST_NM*4 );
         ui->label_range->setText("4 NM");
         break;
-    case 2:
+    case 4:
         scale = (height()/2-5)/(CONST_NM*8 );
         ui->label_range->setText("8 NM");
         break;
-    case 3:
+    case 5:
         scale = (height()/2-5)/(CONST_NM*16 );
         ui->label_range->setText("16 NM");
         break;
-    case 4:
+    case 6:
         scale = (height()/2-5)/(CONST_NM*24 );
         ui->label_range->setText("24 NM");
         break;
-    case 5:
+    case 7:
         scale = (height()/2-5)/(CONST_NM*48 );
         ui->label_range->setText("48 NM");
         break;
-    case 6:
-        scale = (height()/2-5)/(CONST_NM*64 );
-        ui->label_range->setText("64 NM");
-        break;
-    case 7:
-        scale = (height()/2-5)/(CONST_NM*96 );
-        ui->label_range->setText("96 NM");
-        break;
+
     default:
         scale = (height()/2-5)/(90 );
         ui->label_range->setText("48 NM");
@@ -2136,7 +2137,7 @@ void Mainwindow::SetGPS(float mlat,float mlong)
     config.m_config.m_long = mlong;
     ui->text_latInput_2->setText(QString::number(mlat));
     ui->text_longInput_2->setText(QString::number(mlong));
-    vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 100,config.m_config.mapFilename.data());
+    vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 50,config.m_config.mapFilename.data());
     DrawMap();
     update();
 }

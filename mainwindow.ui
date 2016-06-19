@@ -476,9 +476,9 @@
     <property name="geometry">
      <rect>
       <x>1670</x>
-      <y>690</y>
+      <y>620</y>
       <width>241</width>
-      <height>181</height>
+      <height>251</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -503,15 +503,15 @@
         <number>3</number>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="GPS">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>198</width>
-          <height>105</height>
+          <width>215</width>
+          <height>126</height>
          </rect>
         </property>
         <attribute name="label">
@@ -613,7 +613,7 @@
           <x>0</x>
           <y>0</y>
           <width>215</width>
-          <height>56</height>
+          <height>126</height>
          </rect>
         </property>
         <attribute name="label">
@@ -627,7 +627,7 @@
           <x>0</x>
           <y>0</y>
           <width>215</width>
-          <height>56</height>
+          <height>126</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1165,7 +1165,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Vĩ độ:</string>
+        <string>Long:</string>
        </property>
       </widget>
      </item>
@@ -2479,7 +2479,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Kinh độ:</string>
+        <string>Lat:</string>
        </property>
       </widget>
      </item>
@@ -2491,7 +2491,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Cự ly:</string>
+        <string>Rg:</string>
        </property>
       </widget>
      </item>
@@ -2503,7 +2503,7 @@
         </font>
        </property>
        <property name="text">
-        <string>PV:</string>
+        <string>Az:</string>
        </property>
       </widget>
      </item>
@@ -3084,7 +3084,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -7261,7 +7261,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="textEdit_pt_port_2">
+       <widget class="QLineEdit" name="textEdit_arpa_port">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -8143,7 +8143,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="textEdit_pt_port_3">
+       <widget class="QLineEdit" name="textEdit_video_link_1">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -8584,7 +8584,7 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="textEdit_pt_port_4">
+       <widget class="QLineEdit" name="textEdit_video_link_2">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -8602,23 +8602,13 @@
      </layout>
      <zorder>toolButton_set_heading</zorder>
      <zorder>textEdit_heading</zorder>
-     <zorder>textEdit_pt_port_2</zorder>
+     <zorder>textEdit_arpa_port</zorder>
      <zorder>label_29</zorder>
-     <zorder>textEdit_pt_port_4</zorder>
+     <zorder>textEdit_video_link_2</zorder>
      <zorder>textEdit_pt_port</zorder>
      <zorder>label_31</zorder>
      <zorder>label_18</zorder>
-     <zorder>textEdit_pt_port_3</zorder>
-     <zorder>label_30</zorder>
-     <zorder>toolButton_set_heading</zorder>
-     <zorder>textEdit_heading</zorder>
-     <zorder>textEdit_pt_port_2</zorder>
-     <zorder>label_29</zorder>
-     <zorder>textEdit_pt_port_4</zorder>
-     <zorder>textEdit_pt_port</zorder>
-     <zorder>label_31</zorder>
-     <zorder>label_18</zorder>
-     <zorder>textEdit_pt_port_3</zorder>
+     <zorder>textEdit_video_link_1</zorder>
      <zorder>label_30</zorder>
     </widget>
     <widget class="QWidget" name="tab_5">
@@ -8636,9 +8626,9 @@
     <property name="geometry">
      <rect>
       <x>1400</x>
-      <y>690</y>
+      <y>620</y>
       <width>261</width>
-      <height>251</height>
+      <height>321</height>
      </rect>
     </property>
     <property name="font">

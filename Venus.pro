@@ -97,6 +97,7 @@ win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_videostab2411d
 unix:QMAKE_CXXFLAGS += -O2
 unix:QMAKE_CXXFLAGS += -l -DARMA_DONT_USE_WRAPPER -lblas -llapack
 DISTFILES += \
-    appIcon.rc
+    appIcon.rc \
+    notes.txt
 win32:RC_FILE += appIcon.rc
 
