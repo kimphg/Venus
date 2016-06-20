@@ -962,7 +962,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw frame
 
     DrawViewFrame(&p);
-    if(ui->tabWidget_2->currentIndex()>=2&&(img))
+    if(ui->tabWidget_2->currentIndex()==2&&(img))
     {
         //QMutexLocker locker(&mutex);
         QRect rect = ui->tabWidget_2->geometry();
@@ -972,6 +972,17 @@ void Mainwindow::paintEvent(QPaintEvent *event)
         p.setBrush(QBrush(Qt::black));
         p.drawRect(rect);
         p.drawImage(rect,*img,img->rect());        
+    }
+    if(ui->tabWidget_2->currentIndex()==3&&(img))
+    {
+
+//        QRect rect = ui->tabWidget_2->geometry();
+
+//        rect.adjust(4,30,-5,-5);
+//        p.setPen(QPen(Qt::black));
+//        p.setBrush(QBrush(Qt::black));
+//        p.drawRect(rect);
+//        p.drawImage(rect,*img,img->rect());
     }
 }
 //void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -2401,17 +2412,19 @@ void Mainwindow::on_toolButton_centerView_2_clicked()
 
 }
 
-int nCam = 0;
+
 
 void Mainwindow::ShowVideoCam()
 {
     if (g_Capture ==  NULL)
     {
-        g_Capture = cvCaptureFromCAM(nCam);
-//        if (g_IsIR)
+
+        if (g_IsIR)
 //            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
-//        else
+            g_Capture = cvCaptureFromCAM(0);
+        else
 //            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
+            g_Capture = cvCaptureFromCAM(0);
     }
 
     if (!g_Capture)
@@ -2474,7 +2487,7 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         // change url string for capture video
         //......
         g_IsIR = true;
-//        videoTimer->start(40);
+        videoTimer->start(40);
         break;
 
     }
