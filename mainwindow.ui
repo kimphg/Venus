@@ -3046,6 +3046,27 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QCustomButton" name="toolButton_exit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Exit</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QCustomTabWidget" name="tabWidget_2">
@@ -3063,7 +3084,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>2</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
@@ -3072,33 +3093,6 @@
      <attribute name="title">
       <string>Control</string>
      </attribute>
-     <widget class="QCustomButton" name="toolButton_exit">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>221</width>
-        <height>29</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Exit</string>
-      </property>
-      <property name="checkable">
-       <bool>true</bool>
-      </property>
-     </widget>
     </widget>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
