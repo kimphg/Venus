@@ -212,13 +212,7 @@ private slots:
 
     //void on_toolButton_xl_nguong_2_toggled(bool checked);
 
-    void on_toolButton_centerView_2_clicked();
-
-
-
     void on_tabWidget_2_currentChanged(int index);
-
-
 
     void on_toolButton_video_connect_toggled(bool checked);
 

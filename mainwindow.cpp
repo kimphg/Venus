@@ -199,10 +199,11 @@ void inline DrawTrackingRgn(IplImage* img, RECT rect)
 
     utl_ConvertRectToBox(rect, &cvRectBox);
 
-    if (cvRectBox.width <= 10)
+    if ((cvRectBox.width <= 10) ||(cvRectBox.height <= 10))
+    {
+        g_IsTracking = false;
         return;
-    if (cvRectBox.height <= 10)
-        return;
+    }
 
     CvPoint ltPoint = cvPoint(cvRectBox.x, cvRectBox.y);								// left top point of region
     CvPoint bdPoint = cvPoint(cvRectBox.x + cvRectBox.width, cvRectBox.y + cvRectBox.height);	// bottom down point of region
@@ -2487,20 +2488,6 @@ QImage *IplImageToQImage(const IplImage * iplImage, uchar **data, double mini, d
     return qImage;
 }
 
-void Mainwindow::on_toolButton_centerView_2_clicked()
-{
-//    g_Capture = cvCaptureFromCAM(0);
-//    if (!g_Capture)
-//        return;
-//    g_TrueFrame = cvQueryFrame(g_Capture);
-//    g_Frame = cvCreateImage(cvSize(800, 600), g_TrueFrame->depth, g_TrueFrame->nChannels);
-
-}
-
-
-
-
-
 void Mainwindow::ShowVideoCam()
 {
     if (g_Capture ==  NULL)
@@ -2514,8 +2501,16 @@ void Mainwindow::ShowVideoCam()
             g_Capture = cvCaptureFromCAM(1);
     }
 
-    if (!g_Capture)
+    if (!g_Capture) // Capture fail
+    {
+        onConnectVideo = false;
+        ui->toolButton_video_connect->setChecked(false);
+        ui->toolButton_video_connect->setText("Connect");
+        videoTimer->stop();
         return;
+    }
+
+
     if (g_Frame == NULL)
         g_Frame = cvCreateImage(cvSize(800, 600), 8, 3);
 
