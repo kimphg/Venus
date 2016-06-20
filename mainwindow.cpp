@@ -30,6 +30,7 @@ IplImage                    *g_Frame = NULL;
 IplImage                    *g_FrameHalf = NULL;
 bool                        g_IsTracking = false;
 CTracker                    g_Tracker;
+bool                        g_IsIR = false;
 
 
 bool displayAlpha = false;
@@ -303,6 +304,7 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
 }
 void Mainwindow::mousePressEvent(QMouseEvent *event)
 {
+    return;
     if(event->x()>height())return;
     mousePointerX = (event->x());
     mousePointerY = (event->y());
@@ -1041,7 +1043,7 @@ void Mainwindow::InitSetting()
     //ui->horizontalSlider_sea->setValue(ui->horizontalSlider_sea->minimum());
     //ui->tabWidget_2->processing = processing;
     //ui->horizontalSlider_signal_scale->setValue(ui->horizontalSlider_sea->minimum());
-    ui->comboBox_radar_resolution->setCurrentIndex(0);
+    //ui->comboBox_radar_resolution->setCurrentIndex(0);
     //setCursor(QCursor(Qt::CrossCursor));
     range = 6; UpdateScale();
     if(true)
@@ -1227,7 +1229,7 @@ void Mainwindow::UpdateRadarData()
     {
         if(processing->radarData->isClkAdcChanged)
         {
-            ui->comboBox_radar_resolution->setCurrentIndex(processing->radarData->clk_adc);
+            //ui->comboBox_radar_resolution->setCurrentIndex(processing->radarData->clk_adc);
             processing->radarData->setScalePPI(scale);
             this->UpdateScale();
             printf("\nsetScale:%d",processing->radarData->clk_adc);
@@ -1293,11 +1295,13 @@ void Mainwindow::InitTimer()
     connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
     //dataPlaybackTimer->moveToThread(t);
     connect(t,SIGNAL(finished()),t,SLOT(deleteLater()));
-    t->start(QThread::TimeCriticalPriority);
+
     t1->start(QThread::TimeCriticalPriority);
 
     connect(videoTimer, SIGNAL(timeout()), this, SLOT(ShowVideoCam()));
-    //videoTimer->start(30);
+    //videoTimer->start(40);
+    //videoTimer->moveToThread(t);
+    //t->start(QThread::TimeCriticalPriority);
 
 }
 void Mainwindow::InitNetwork()
@@ -1323,7 +1327,7 @@ void Mainwindow::InitNetwork()
         }
         udpSendSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 10);
         tcpSender = new QTcpSocket(this);
-        tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());
+//        tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());
         udpARPA = new QUdpSocket(this);
         udpARPA->bind(4444,QUdpSocket::ShareAddress);
         connect(udpARPA, SIGNAL(readyRead()),
@@ -2079,7 +2083,7 @@ void Mainwindow::on_comboBox_img_mode_currentIndexChanged(int index)
 
 
 void Mainwindow::on_toolButton_send_command_clicked()
-{
+{/*
     unsigned char        bytes[8];
     hex2bin(ui->lineEdit_byte_1->text().toStdString().data(),&bytes[0]);
     hex2bin(ui->lineEdit_byte_2->text().toStdString().data(),&bytes[1]);
@@ -2089,7 +2093,7 @@ void Mainwindow::on_toolButton_send_command_clicked()
     hex2bin(ui->lineEdit_byte_6->text().toStdString().data(),&bytes[5]);
     hex2bin(ui->lineEdit_byte_7->text().toStdString().data(),&bytes[6]);
     hex2bin(ui->lineEdit_byte_8->text().toStdString().data(),&bytes[7]);
-    udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);
+    udpSendSocket->writeDatagram((char*)&bytes[0],8,QHostAddress("192.168.0.44"),2572);*/
 }
 
 void Mainwindow::on_toolButton_map_toggled(bool checked)
@@ -2397,11 +2401,19 @@ void Mainwindow::on_toolButton_centerView_2_clicked()
 
 }
 
+int nCam = 0;
+
 void Mainwindow::ShowVideoCam()
 {
     if (g_Capture ==  NULL)
-        g_Capture = cvCaptureFromCAM(0);
-        //g_Capture = cvCaptureFromFile("Camera URL");
+    {
+        g_Capture = cvCaptureFromCAM(nCam);
+//        if (g_IsIR)
+//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
+//        else
+//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
+    }
+
     if (!g_Capture)
         return;
     if (g_Frame == NULL)
@@ -2450,6 +2462,7 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         g_IsTracking = false;
         // change url string for capture video
         //......
+        g_IsIR = false;
         videoTimer->start(40);
 
         break;
@@ -2460,7 +2473,8 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         g_IsTracking = false;
         // change url string for capture video
         //......
-        //videoTimer->start(40);
+        g_IsIR = true;
+//        videoTimer->start(40);
         break;
 
     }
