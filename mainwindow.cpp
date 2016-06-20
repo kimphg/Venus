@@ -190,6 +190,43 @@ void bin2hex(unsigned char byte, char* str)
     }
 
 }
+
+void inline DrawTrackingRgn(IplImage* img, RECT rect)
+{
+    if (!g_IsTracking)
+        return;
+
+    CvRect cvRectBox = cvRect(0, 0, 0, 0);
+
+    utl_ConvertRectToBox(rect, &cvRectBox);
+
+    if (cvRectBox.width <= 10)
+        return;
+    if (cvRectBox.height <= 10)
+        return;
+
+    CvPoint ltPoint = cvPoint(cvRectBox.x, cvRectBox.y);								// left top point of region
+    CvPoint bdPoint = cvPoint(cvRectBox.x + cvRectBox.width, cvRectBox.y + cvRectBox.height);	// bottom down point of region
+    CvPoint rtPoint = cvPoint(cvRectBox.x + cvRectBox.width, cvRectBox.y);					// right top point of region
+    CvPoint lbPoint = cvPoint(cvRectBox.x, cvRectBox.y + cvRectBox.height);				// left bottom point of region
+
+    CvScalar trackScalar = cvScalar(0, 255, 0);
+
+    cvLine(img, ltPoint, cvPoint(ltPoint.x + 10, ltPoint.y), trackScalar, 2);
+    cvLine(img, ltPoint, cvPoint(ltPoint.x, ltPoint.y + 10), trackScalar, 2);
+
+    cvLine(img, bdPoint, cvPoint(bdPoint.x - 10, bdPoint.y), trackScalar, 2);
+    cvLine(img, bdPoint, cvPoint(bdPoint.x, bdPoint.y - 10), trackScalar, 2);
+
+    cvLine(img, rtPoint, cvPoint(rtPoint.x - 10, rtPoint.y), trackScalar, 2);
+    cvLine(img, rtPoint, cvPoint(rtPoint.x, rtPoint.y + 10), trackScalar, 2);
+
+    cvLine(img, lbPoint, cvPoint(lbPoint.x, lbPoint.y - 10), trackScalar, 2);
+    cvLine(img, lbPoint, cvPoint(lbPoint.x + 10, lbPoint.y), trackScalar, 2);
+
+    return;
+}
+
 void Mainwindow::updateTargets()
 {
     for(short i = 0;i<targetList.size();i++)
@@ -2451,7 +2488,10 @@ void Mainwindow::ShowVideoCam()
          g_Tracker.m_RectCurrent.top	= g_Tracker.gRectCurrentHalf.top*2;
          g_Tracker.m_RectCurrent.right	= g_Tracker.gRectCurrentHalf.right*2;
          g_Tracker.m_RectCurrent.bottom	= g_Tracker.gRectCurrentHalf.bottom*2;
+         DrawTrackingRgn(g_Frame, g_Tracker.m_RectCurrent);
      }
+
+
 
      if(qImageBuffer)
          delete qImageBuffer;
