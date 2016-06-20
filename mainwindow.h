@@ -218,6 +218,10 @@ private slots:
 
     void on_tabWidget_2_currentChanged(int index);
 
+
+
+    void on_toolButton_video_connect_toggled(bool checked);
+
 private:
     void initActionsConnections();
 };

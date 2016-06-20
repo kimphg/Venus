@@ -12,6 +12,7 @@
 short scrCtX, scrCtY;
 short scrCtLat, scrCtLon;
 RECT trackingRect;
+bool onConnectVideo = false;
 QList<CTarget*> targetList;
 short selected_target_index = 0;
 QRect toBeTracked;
@@ -267,13 +268,32 @@ void Mainwindow::sendToRadar(unsigned char* hexdata)
 
 void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(event->x()>height())
+    if(true)
     {
         QRect videoRect = ui->tabWidget_2->geometry();
-        if(videoRect.contains(event->x(),event->y()))
+        if(isSelecting)
         {
+
             trackingRect.right = event->x() - videoRect.left();
             trackingRect.bottom = event->y() - videoRect.top();
+            short temp;
+            if(trackingRect.right<trackingRect.left)
+            {
+                temp = trackingRect.right;
+                trackingRect.right  = trackingRect.left;
+                trackingRect.left = temp;
+            }
+            if(trackingRect.bottom<trackingRect.top)
+            {
+                temp = trackingRect.bottom;
+                trackingRect.bottom =trackingRect.top;
+                trackingRect.top = temp;
+            }
+            if(trackingRect.left<0)trackingRect.left=0;
+            if(trackingRect.right>799)trackingRect.right=799;
+            if(trackingRect.top<0)trackingRect.top=0;
+            if(trackingRect.bottom>599)trackingRect.bottom=599;
+
             StartTracking(trackingRect);
             isSelecting = false;
         }
@@ -331,6 +351,7 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
     {
         toBeTracked.setRight(event->x()) ;
         toBeTracked.setBottom(event->y());
+        if(!toBeTracked.contains(event->x(),event->y())) isSelecting = false;
     }
     if(isDraging&&(event->buttons() & Qt::LeftButton)) {
 
@@ -358,6 +379,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
     if(event->x()>height())
     {
         QRect videoRect = ui->tabWidget_2->geometry();
+        videoRect.adjust(4,30,-5,-5);
         if(videoRect.contains(event->x(),event->y()))
         {
             g_IsTracking = false;
@@ -1028,7 +1050,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw frame
 
     DrawViewFrame(&p);
-    if(((ui->tabWidget_2->currentIndex()==2)||(ui->tabWidget_2->currentIndex()==3))&&(img))
+    if(((ui->tabWidget_2->currentIndex()==2)||(ui->tabWidget_2->currentIndex()==3))&&(img)&&(onConnectVideo))
     {
         //QMutexLocker locker(&mutex);
         QRect rect = ui->tabWidget_2->geometry();
@@ -2477,6 +2499,8 @@ void Mainwindow::on_toolButton_centerView_2_clicked()
 
 
 
+
+
 void Mainwindow::ShowVideoCam()
 {
     if (g_Capture ==  NULL)
@@ -2487,7 +2511,7 @@ void Mainwindow::ShowVideoCam()
             g_Capture = cvCaptureFromCAM(0);
         else
 //            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
-            g_Capture = cvCaptureFromCAM(0);
+            g_Capture = cvCaptureFromCAM(1);
     }
 
     if (!g_Capture)
@@ -2529,6 +2553,8 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
     // 2: capture Daylight
     // 3: capture IR
     // other: do nothing
+    if (!onConnectVideo)
+        return;
 
     switch (index)
     {
@@ -2568,5 +2594,53 @@ void Mainwindow::StartTracking(RECT inputRECT)
     g_Tracker.InitForFirstFrame1(g_Frame, inputRECT);
     g_FrameHalf = cvCreateImage(cvSize(g_Tracker.m_ImageMaxX/2, g_Tracker.m_ImageMaxY/2), 8, 3);
     g_IsTracking = true;
+
+}
+
+void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
+{
+    onConnectVideo = checked;
+    if(checked)
+    {
+        ui->toolButton_video_connect->setText("Disconnect");
+        if (!onConnectVideo)
+            return;
+
+        switch (ui->tabWidget_2->currentIndex())
+        {
+        case 2:
+            videoTimer->stop();
+            cvReleaseCapture(&g_Capture);
+            g_Capture = NULL;
+            g_IsTracking = false;
+            // change url string for capture video
+            //......
+            g_IsIR = false;
+            videoTimer->start(40);
+
+            break;
+        case 3:
+            videoTimer->stop();
+            cvReleaseCapture(&g_Capture);
+            g_Capture = NULL;
+            g_IsTracking = false;
+            // change url string for capture video
+            //......
+            g_IsIR = true;
+            videoTimer->start(40);
+            break;
+
+        }
+    }
+    else
+    {
+        ui->toolButton_video_connect->setText("Connect");
+        videoTimer->stop();
+        cvReleaseCapture(&g_Capture);
+        g_Capture = NULL;
+        g_IsTracking = false;
+
+    }
+
 
 }
