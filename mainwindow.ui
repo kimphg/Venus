@@ -612,8 +612,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>100</width>
-          <height>30</height>
+          <width>215</width>
+          <height>126</height>
          </rect>
         </property>
         <attribute name="label">
@@ -626,8 +626,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>100</width>
-          <height>30</height>
+          <width>215</width>
+          <height>126</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3084,7 +3084,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>

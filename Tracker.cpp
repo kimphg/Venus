@@ -731,6 +731,11 @@ void CTracker::InitForFirstFrame1(IplImage* imgInput, RECT rectInput)
     m_RectCurrent.left     = rectInput.left;
     m_RectCurrent.right    = rectInput.right;
 
+    gRectCurrentHalf.left	= m_RectCurrent.left/2;
+    gRectCurrentHalf.top	= m_RectCurrent.top/2;
+    gRectCurrentHalf.right	= m_RectCurrent.right/2;
+    gRectCurrentHalf.bottom	= m_RectCurrent.bottom/2;
+
     m_pImgCurrent = cvCloneImage(imgInput);
 
     //get half image for processing

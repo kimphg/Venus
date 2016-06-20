@@ -53,6 +53,7 @@ protected:
 
     enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
+
     //void createActions();
     //void createMenus();
     void DrawGrid(QPainter* p,short centerX,short centerY);

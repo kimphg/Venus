@@ -11,14 +11,15 @@
 #include <queue>
 short scrCtX, scrCtY;
 short scrCtLat, scrCtLon;
-
-
+RECT trackingRect;
 QList<CTarget*> targetList;
 short selected_target_index = 0;
+QRect toBeTracked;
+bool isSelecting = false;
 //static bool                 isAddingTarget=false;
 static QPixmap              *pMap=NULL;
 //static QImage               *sgn_img = new QImage(RADAR_MAX_RESOLUTION*2,RADAR_MAX_RESOLUTION*2,QImage::Format_RGB32);
-dataProcessingThread *processing;
+dataProcessingThread        *processing;
 static Q_vnmap              vnmap;
 QTimer*                     scrUpdateTimer,*readBuffTimer, *videoTimer;
 QTimer*                     syncTimer1s ;
@@ -31,8 +32,6 @@ IplImage                    *g_FrameHalf = NULL;
 bool                        g_IsTracking = false;
 CTracker                    g_Tracker;
 bool                        g_IsIR = false;
-
-
 bool displayAlpha = false;
 //static short                currMaxRange = RADAR_MAX_RESOLUTION;
 static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
@@ -190,7 +189,6 @@ void bin2hex(unsigned char byte, char* str)
     }
 
 }
-
 void inline DrawTrackingRgn(IplImage* img, RECT rect)
 {
     if (!g_IsTracking)
@@ -226,7 +224,6 @@ void inline DrawTrackingRgn(IplImage* img, RECT rect)
 
     return;
 }
-
 void Mainwindow::updateTargets()
 {
     for(short i = 0;i<targetList.size();i++)
@@ -270,7 +267,18 @@ void Mainwindow::sendToRadar(unsigned char* hexdata)
 
 void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 {
-
+    if(event->x()>height())
+    {
+        QRect videoRect = ui->tabWidget_2->geometry();
+        if(videoRect.contains(event->x(),event->y()))
+        {
+            trackingRect.right = event->x() - videoRect.left();
+            trackingRect.bottom = event->y() - videoRect.top();
+            StartTracking(trackingRect);
+            isSelecting = false;
+        }
+        return;
+    }
 //    if(isAddingTarget)
 //    {
 //        float xRadar = (mouseX - scrCtX+dx)/signsize ;//coordinates in  radar xy system
@@ -284,6 +292,7 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
     DrawMap();
     isScreenUp2Date = false;
     isDraging = false;
+    QMainWindow::mouseReleaseEvent(event);
     /*currMaxRange = (sqrtf(dx*dx+dy*dy)+scrCtY)/signsize;
     if(currMaxRange>RADAR_MAX_RESOLUTION)currMaxRange = RADAR_MAX_RESOLUTION;
     if((dx*dx+dy*dy)*3>scrCtX*scrCtX)
@@ -318,6 +327,11 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
     //if(!isDraging)return;
     //mouseX = (event->x());
     //mouseY = (event->y());
+    if(isSelecting)
+    {
+        toBeTracked.setRight(event->x()) ;
+        toBeTracked.setBottom(event->y());
+    }
     if(isDraging&&(event->buttons() & Qt::LeftButton)) {
 
         while(dx*dx+dy*dy>dxMax*dxMax)
@@ -341,8 +355,23 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
 }
 void Mainwindow::mousePressEvent(QMouseEvent *event)
 {
-    return;
-    if(event->x()>height())return;
+    if(event->x()>height())
+    {
+        QRect videoRect = ui->tabWidget_2->geometry();
+        if(videoRect.contains(event->x(),event->y()))
+        {
+            g_IsTracking = false;
+            isSelecting = true;
+            trackingRect.left = event->x() - videoRect.left();
+            trackingRect.top = event->y() - videoRect.top();
+
+            toBeTracked.setLeft(event->x());
+            toBeTracked.setTop(event->y());
+            toBeTracked.setRight(event->x()) ;
+            toBeTracked.setBottom( event->y());
+        }
+        return;
+    }
     mousePointerX = (event->x());
     mousePointerY = (event->y());
 
@@ -362,7 +391,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
         isScreenUp2Date = false;
         return;
     }
-
+    QMainWindow::mousePressEvent(event);
 //    if(selectobject) {
 
 
@@ -999,7 +1028,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw frame
 
     DrawViewFrame(&p);
-    if(ui->tabWidget_2->currentIndex()==2&&(img))
+    if(((ui->tabWidget_2->currentIndex()==2)||(ui->tabWidget_2->currentIndex()==3))&&(img))
     {
         //QMutexLocker locker(&mutex);
         QRect rect = ui->tabWidget_2->geometry();
@@ -1010,16 +1039,13 @@ void Mainwindow::paintEvent(QPaintEvent *event)
         p.drawRect(rect);
         p.drawImage(rect,*img,img->rect());        
     }
-    if(ui->tabWidget_2->currentIndex()==3&&(img))
+
+
+    if(isSelecting)
     {
-
-//        QRect rect = ui->tabWidget_2->geometry();
-
-//        rect.adjust(4,30,-5,-5);
-//        p.setPen(QPen(Qt::black));
-//        p.setBrush(QBrush(Qt::black));
-//        p.drawRect(rect);
-//        p.drawImage(rect,*img,img->rect());
+        p.setPen(QPen(Qt::red));
+        p.setBrush(QBrush(Qt::transparent));
+        p.drawRect(toBeTracked);
     }
 }
 //void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -1349,7 +1375,7 @@ void Mainwindow::InitTimer()
     connect(videoTimer, SIGNAL(timeout()), this, SLOT(ShowVideoCam()));
     //videoTimer->start(40);
     //videoTimer->moveToThread(t);
-    //t->start(QThread::TimeCriticalPriority);
+    t->start(QThread::TimeCriticalPriority);
 
 }
 void Mainwindow::InitNetwork()
@@ -2490,8 +2516,6 @@ void Mainwindow::ShowVideoCam()
          g_Tracker.m_RectCurrent.bottom	= g_Tracker.gRectCurrentHalf.bottom*2;
          DrawTrackingRgn(g_Frame, g_Tracker.m_RectCurrent);
      }
-
-
 
      if(qImageBuffer)
          delete qImageBuffer;

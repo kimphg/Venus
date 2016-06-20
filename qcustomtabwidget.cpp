@@ -28,15 +28,16 @@ void QCustomTabWidget::hoverMove(QHoverEvent *)
 void QCustomTabWidget::highLight()
 {
 
-    if(this->currentIndex()==2)
+    if(this->currentIndex()==2||this->currentIndex()==3)
     {
         this->setStyleSheet("background-color: rgb(0, 0, 0,0);color:rgb(255, 255, 255);font: 12pt \"MS Shell Dlg 2\";");
     }
+
     else
     {
         this->setStyleSheet("background-color: rgb(30, 50, 70,255);color:rgb(255, 255, 255);font: 12pt \"MS Shell Dlg 2\";");
     }
-    //repaint();
+    repaint();
 }
 void QCustomTabWidget::paintEvent(QPaintEvent *)
 {
@@ -45,7 +46,7 @@ void QCustomTabWidget::paintEvent(QPaintEvent *)
 
 void QCustomTabWidget::resetView()
 {
-    if(this->currentIndex()==2)
+    if(this->currentIndex()==2||this->currentIndex()==3)
     {
         this->setStyleSheet("background-color: rgb(0, 0, 0,0);color:rgb(30, 50, 70,255);font: 12pt \"MS Shell Dlg 2\"; border-style: groove; border-width: 1px;border-color:white;");
     }
