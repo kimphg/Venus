@@ -379,20 +379,27 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
 {
     if(event->x()>height())
     {
-        QRect videoRect = ui->tabWidget_2->geometry();
-        videoRect.adjust(4,30,-5,-5);
-        if(videoRect.contains(event->x(),event->y()))
+        if(event->buttons() & Qt::LeftButton)
+        {
+            QRect videoRect = ui->tabWidget_2->geometry();
+            videoRect.adjust(4,30,-5,-5);
+            if(videoRect.contains(event->x(),event->y()))
+            {
+                g_IsTracking = false;
+                isSelecting = true;
+                trackingRect.left = event->x() - videoRect.left();
+                trackingRect.top = event->y() - videoRect.top();
+
+                toBeTracked.setLeft(event->x());
+                toBeTracked.setTop(event->y());
+                toBeTracked.setRight(event->x()) ;
+                toBeTracked.setBottom( event->y());
+            }
+        }else
         {
             g_IsTracking = false;
-            isSelecting = true;
-            trackingRect.left = event->x() - videoRect.left();
-            trackingRect.top = event->y() - videoRect.top();
-
-            toBeTracked.setLeft(event->x());
-            toBeTracked.setTop(event->y());
-            toBeTracked.setRight(event->x()) ;
-            toBeTracked.setBottom( event->y());
         }
+
 
     }
     else
