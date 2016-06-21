@@ -269,37 +269,34 @@ void Mainwindow::sendToRadar(unsigned char* hexdata)
 
 void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(true)
+    if(isSelecting)
     {
         QRect videoRect = ui->tabWidget_2->geometry();
-        if(isSelecting)
+        trackingRect.right = event->x() - videoRect.left();
+        trackingRect.bottom = event->y() - videoRect.top();
+        short temp;
+        if(trackingRect.right<trackingRect.left)
         {
-
-            trackingRect.right = event->x() - videoRect.left();
-            trackingRect.bottom = event->y() - videoRect.top();
-            short temp;
-            if(trackingRect.right<trackingRect.left)
-            {
-                temp = trackingRect.right;
-                trackingRect.right  = trackingRect.left;
-                trackingRect.left = temp;
-            }
-            if(trackingRect.bottom<trackingRect.top)
-            {
-                temp = trackingRect.bottom;
-                trackingRect.bottom =trackingRect.top;
-                trackingRect.top = temp;
-            }
-            if(trackingRect.left<0)trackingRect.left=0;
-            if(trackingRect.right>799)trackingRect.right=799;
-            if(trackingRect.top<0)trackingRect.top=0;
-            if(trackingRect.bottom>599)trackingRect.bottom=599;
-
-            StartTracking(trackingRect);
-            isSelecting = false;
+            temp = trackingRect.right;
+            trackingRect.right  = trackingRect.left;
+            trackingRect.left = temp;
         }
-        return;
+        if(trackingRect.bottom<trackingRect.top)
+        {
+            temp = trackingRect.bottom;
+            trackingRect.bottom =trackingRect.top;
+            trackingRect.top = temp;
+        }
+        if(trackingRect.left<0)trackingRect.left=0;
+        if(trackingRect.right>799)trackingRect.right=799;
+        if(trackingRect.top<0)trackingRect.top=0;
+        if(trackingRect.bottom>599)trackingRect.bottom=599;
+
+        StartTracking(trackingRect);
+        isSelecting = false;
     }
+
+
 //    if(isAddingTarget)
 //    {
 //        float xRadar = (mouseX - scrCtX+dx)/signsize ;//coordinates in  radar xy system
@@ -310,9 +307,12 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 //        return;
 //    }
     //processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
-    DrawMap();
-    isScreenUp2Date = false;
-    isDraging = false;
+    if(isDraging)
+    {
+        DrawMap();
+        isScreenUp2Date = false;
+        isDraging = false;
+    }
     QMainWindow::mouseReleaseEvent(event);
     /*currMaxRange = (sqrtf(dx*dx+dy*dy)+scrCtY)/signsize;
     if(currMaxRange>RADAR_MAX_RESOLUTION)currMaxRange = RADAR_MAX_RESOLUTION;
@@ -393,19 +393,21 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             toBeTracked.setRight(event->x()) ;
             toBeTracked.setBottom( event->y());
         }
-        return;
-    }
-    mousePointerX = (event->x());
-    mousePointerY = (event->y());
 
-    //ui->frame_RadarViewOptions->hide();
-    if(event->buttons() & Qt::LeftButton) {
-        isDraging = true;
-        mousePointerX=event->x();
-        mousePointerY=event->y();
-        //printf("mouseX %d\n",mouseX);
     }
+    else
+    {
+        mousePointerX = (event->x());
+        mousePointerY = (event->y());
 
+        //ui->frame_RadarViewOptions->hide();
+        if(event->buttons() & Qt::LeftButton) {
+            isDraging = true;
+            mousePointerX=event->x();
+            mousePointerY=event->y();
+            //printf("mouseX %d\n",mouseX);
+        }
+    }
     QMainWindow::mousePressEvent(event);
 //    if(selectobject) {
 
