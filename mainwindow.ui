@@ -476,9 +476,9 @@
     <property name="geometry">
      <rect>
       <x>1670</x>
-      <y>620</y>
+      <y>660</y>
       <width>241</width>
-      <height>221</height>
+      <height>181</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -488,7 +488,7 @@
      <string notr="true" comment="asd "/>
     </property>
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="2" column="0">
+     <item row="1" column="0">
       <widget class="QToolBox" name="toolBox">
        <property name="autoFillBackground">
         <bool>true</bool>
@@ -510,8 +510,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>215</width>
-          <height>129</height>
+          <width>198</width>
+          <height>105</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1443,7 +1443,7 @@
           <x>0</x>
           <y>0</y>
           <width>215</width>
-          <height>129</height>
+          <height>89</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3838,19 +3838,19 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideNone</enum>
     </property>
     <widget class="QWidget" name="tab_3">
      <attribute name="title">
-      <string>Control</string>
+      <string>  Control   </string>
      </attribute>
     </widget>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
-      <string>Setting</string>
+      <string>  Setting   </string>
      </attribute>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
@@ -5657,12 +5657,12 @@
     </widget>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
-      <string>Video cam</string>
+      <string>Daylight Cam</string>
      </attribute>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
-      <string>IR Cam</string>
+      <string>   IR Cam   </string>
      </attribute>
     </widget>
    </widget>
@@ -5670,9 +5670,9 @@
     <property name="geometry">
      <rect>
       <x>1400</x>
-      <y>620</y>
+      <y>660</y>
       <width>261</width>
-      <height>321</height>
+      <height>281</height>
      </rect>
     </property>
     <property name="font">
@@ -13415,8 +13415,8 @@
    <widget class="QCustomButton" name="toolButton_exit">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>20</y>
+      <x>880</x>
+      <y>80</y>
       <width>221</width>
       <height>29</height>
      </rect>
@@ -13442,10 +13442,10 @@
    <widget class="QCustomButton" name="toolButton_video_connect">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>50</y>
-      <width>221</width>
-      <height>81</height>
+      <x>1040</x>
+      <y>10</y>
+      <width>64</width>
+      <height>64</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -13469,8 +13469,8 @@
     </property>
     <property name="iconSize">
      <size>
-      <width>256</width>
-      <height>256</height>
+      <width>55</width>
+      <height>55</height>
      </size>
     </property>
     <property name="checkable">
