@@ -116,6 +116,7 @@ private:
 public:
     void setScaleNM(unsigned short rangeNM);
 private slots:
+    void LradControl();
     void ShowVideoCam();
     void readBuffer();
     void sync1();
@@ -144,7 +145,7 @@ private slots:
     void on_actionView_grid_triggered(bool checked);
 
 
-    void on_actionPlayPause_toggled(bool arg1);
+//    void on_actionPlayPause_toggled(bool arg1);
 
     void on_actionRecording_triggered();
 

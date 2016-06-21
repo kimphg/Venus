@@ -24,7 +24,7 @@ static QPixmap              *pMap=NULL;
 static Q_vnmap              vnmap;
 QTimer*                     scrUpdateTimer,*readBuffTimer, *videoTimer;
 QTimer*                     syncTimer1s ;
-QTimer*                     dataPlaybackTimer ;
+QTimer*                     timer_lrad_control ;
 QThread*                    t,*t1 ;
 CvCapture                   *g_Capture = NULL;
 IplImage                    *g_TrueFrame = NULL;
@@ -1059,7 +1059,7 @@ void Mainwindow::InitTimer()
     scrUpdateTimer = new QTimer();
     syncTimer1s = new QTimer();
     readBuffTimer = new QTimer();
-    dataPlaybackTimer = new QTimer();
+    timer_lrad_control = new QTimer();
     videoTimer  = new QTimer();
     t = new QThread();
     t1 = new QThread();
@@ -1081,7 +1081,8 @@ void Mainwindow::InitTimer()
 //    processing = new dataProcessingThread();
 //    processing->start();
 //    connect(this,SIGNAL(destroyed()),processing,SLOT(deleteLater()));
-//    connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
+    connect(timer_lrad_control,SIGNAL(timeout()),this,SLOT(LradControl()));
+    timer_lrad_control->start(100);
     //dataPlaybackTimer->moveToThread(t);
     connect(t,SIGNAL(finished()),t,SLOT(deleteLater()));
 
@@ -1091,6 +1092,27 @@ void Mainwindow::InitTimer()
     //videoTimer->start(40);
     //videoTimer->moveToThread(t);
     t->start(QThread::TimeCriticalPriority);
+
+}
+void Mainwindow::LradControl()
+{/*
+    if(g_IsTracking)
+    {
+        short dx = (g_Tracker.m_RectCurrent.right + g_Tracker.m_RectCurrent.left)/2 - 400;
+        short dy = (g_Tracker.m_RectCurrent.bottom + g_Tracker.m_RectCurrent.top)/2 - 300;
+        if(tcpSender->state()==QAbstractSocket::ConnectedState)
+        {
+            tcpSender->write((char*)&bytes[0],8);
+            printf("data send \n");
+        }
+        else
+        {
+            tcpSender->connectToHost("192.168.1.140",10100);
+            tcpSender->waitForConnected(500);
+            tcpSender->write((char*)&bytes[0],8);
+            printf("\nnot conected");
+        }
+    }*/
 
 }
 void Mainwindow::InitNetwork()
@@ -1116,8 +1138,8 @@ void Mainwindow::InitNetwork()
         }
         udpSendSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 10);
         tcpSender = new QTcpSocket(this);
-//        tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());
-        udpARPA = new QUdpSocket(this);
+//        tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());tcpSender->connectToHost("192.168.1.140",10100);
+        udpARPA = new QUdpSocket(this);tcpSender->connectToHost("192.168.1.140",10100);
         udpARPA->bind(4444,QUdpSocket::ShareAddress);
         connect(udpARPA, SIGNAL(readyRead()),
                 this, SLOT(processARPA()));
@@ -1473,12 +1495,7 @@ void Mainwindow::on_actionView_grid_triggered(bool checked)
 }
 
 
-void Mainwindow::on_actionPlayPause_toggled(bool arg1)
-{
-    //processing->togglePlayPause(arg1);
-    if(arg1)dataPlaybackTimer->start(25);else dataPlaybackTimer->stop();
 
-}
 
 
 /*
