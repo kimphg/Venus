@@ -205,10 +205,10 @@ void inline DrawTrackingRgn(IplImage* img, RECT rect)
         return;
     }
 
-    CvPoint ltPoint = cvPoint(cvRectBox.x, cvRectBox.y);								// left top point of region
+    CvPoint ltPoint = cvPoint(cvRectBox.x, cvRectBox.y);                                        // left top point of region
     CvPoint bdPoint = cvPoint(cvRectBox.x + cvRectBox.width, cvRectBox.y + cvRectBox.height);	// bottom down point of region
-    CvPoint rtPoint = cvPoint(cvRectBox.x + cvRectBox.width, cvRectBox.y);					// right top point of region
-    CvPoint lbPoint = cvPoint(cvRectBox.x, cvRectBox.y + cvRectBox.height);				// left bottom point of region
+    CvPoint rtPoint = cvPoint(cvRectBox.x + cvRectBox.width, cvRectBox.y);                      // right top point of region
+    CvPoint lbPoint = cvPoint(cvRectBox.x, cvRectBox.y + cvRectBox.height);                     // left bottom point of region
 
     CvScalar trackScalar = cvScalar(0, 255, 0);
 
