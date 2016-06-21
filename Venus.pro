@@ -60,7 +60,8 @@ FORMS    += mainwindow.ui \
 #DEPENDPATH += $$PWD/shapelib
 #INCLUDEPATH += $$PWD/../WpdPack/Include
 #DEPENDPATH += $$PWD/../WpdPack/Include
-RESOURCES +=
+RESOURCES += \
+    icons.qrc
 win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -lblas_win32_MT
 win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -llapack_win32_MT
 unix: LIBS += -larmadillo

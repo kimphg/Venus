@@ -534,7 +534,7 @@ void Mainwindow::DrawMap()
     QPainter p(pMap);
     pMap->fill(QColor(0,0,0,255));
     //pMap->fill(Qt::transparent);
-    if(ui->toolButton_map->isChecked()==false)return;
+    //if(ui->toolButton_map->isChecked()==false)return;
     QPen pen(QColor(255,255,255,180));
     QColor color[5];
     color[0].setRgb(143,137,87,255);//land
@@ -863,7 +863,7 @@ void Mainwindow::InitSetting()
     if(true)
     {
         SetGPS(config.m_config.m_lat, config.m_config.m_long);
-        vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 50,config.m_config.mapFilename.data());
+        vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 50,"outputMap4layer.ism");
         if(pMap)delete pMap;
         pMap = new QPixmap(height(),height());
 

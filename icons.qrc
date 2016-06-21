@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/new/camIcon">
+        <file>img/cam_connect.ico</file>
+        <file>img/cam_disconnect.ico</file>
+    </qresource>
+</RCC>
