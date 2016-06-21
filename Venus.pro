@@ -26,7 +26,6 @@ SOURCES += main.cpp\
     gpsdialog.cpp \
     C_radar_data.cpp \
     c_arpa_data.cpp \
-    dataprocessingthread.cpp \
     onexitdialog.cpp \
     qcustombutton.cpp \
     qcustomframe.cpp \
@@ -42,7 +41,6 @@ HEADERS  += mainwindow.h \
     gpsdialog.h \
     C_radar_data.h \
     c_arpa_data.h \
-    dataprocessingthread.h \
     onexitdialog.h \
     qcustombutton.h \
     qcustomframe.h \
@@ -60,14 +58,14 @@ FORMS    += mainwindow.ui \
 #else:unix: LIBS += -L$$PWD\shapelib\ -lshapelib
 #INCLUDEPATH += $$PWD/shapelib
 #DEPENDPATH += $$PWD/shapelib
-INCLUDEPATH += $$PWD/../WpdPack/Include
-DEPENDPATH += $$PWD/../WpdPack/Include
+#INCLUDEPATH += $$PWD/../WpdPack/Include
+#DEPENDPATH += $$PWD/../WpdPack/Include
 RESOURCES +=
 win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -lblas_win32_MT
 win32:LIBS += -L$$PWD/../armadilloWin32/lib_winx86/ -llapack_win32_MT
 unix: LIBS += -larmadillo
-win32:LIBS += -L$$PWD/../WpdPack/Lib/ -lPacket
-win32:LIBS += -L$$PWD/../WpdPack/Lib/ -lwpcap
+#win32:LIBS += -L$$PWD/../WpdPack/Lib/ -lPacket
+#win32:LIBS += -L$$PWD/../WpdPack/Lib/ -lwpcap
 INCLUDEPATH += $$PWD/../opencv/build/include
 win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_core2411d
 win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_highgui2411d

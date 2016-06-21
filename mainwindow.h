@@ -14,7 +14,7 @@
 //#include <CpView.h>
 #include <Config.h>
 #include <gpsdialog.h>
-#include <dataprocessingthread.h>
+//#include <dataprocessingthread.h>
 #include <onexitdialog.h>
 #include <C_radar_data.h>
 #include <QFileDialog>
@@ -98,7 +98,7 @@ private:
     void DrawViewFrame(QPainter *p);
     void DrawSignal(QPainter *p);
     void drawAisTarget(QPainter *p);
-    void DrawTarget(QPainter* p);
+//    void DrawTarget(QPainter* p);
     void DrawMap();
     void ReloadSetting();
     void SendCommandControl();

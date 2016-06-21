@@ -20,7 +20,7 @@ bool isSelecting = false;
 //static bool                 isAddingTarget=false;
 static QPixmap              *pMap=NULL;
 //static QImage               *sgn_img = new QImage(RADAR_MAX_RESOLUTION*2,RADAR_MAX_RESOLUTION*2,QImage::Format_RGB32);
-dataProcessingThread        *processing;
+//dataProcessingThread        *processing;
 static Q_vnmap              vnmap;
 QTimer*                     scrUpdateTimer,*readBuffTimer, *videoTimer;
 QTimer*                     syncTimer1s ;
@@ -37,7 +37,7 @@ bool displayAlpha = false;
 //static short                currMaxRange = RADAR_MAX_RESOLUTION;
 static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
 static short                dxMax,dyMax;
-static C_ARPA_data          arpa_data;
+//static C_ARPA_data          arpa_data;
 //static short                curAzir=-1;//,drawAzir=0;
 static float                signsize,sn_scale;
 static short                 dx =0,dy=0,dxMap=0,dyMap=0;//mouseX,mouseY;
@@ -309,7 +309,7 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
 //        isScreenUp2Date = false;
 //        return;
 //    }
-    processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
+    //processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
     DrawMap();
     isScreenUp2Date = false;
     isDraging = false;
@@ -405,15 +405,7 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
         mousePointerY=event->y();
         //printf("mouseX %d\n",mouseX);
     }
-    else if(event->buttons() & Qt::RightButton)
-    {
 
-        float xRadar = (mousePointerX - scrCtX+dx)/scale ;//coordinates in  radar xy system
-        float yRadar = -(mousePointerY - scrCtY+dy)/scale;
-        processing->radarData->addTrackManual(xRadar,yRadar);
-        isScreenUp2Date = false;
-        return;
-    }
     QMainWindow::mousePressEvent(event);
 //    if(selectobject) {
 
@@ -462,69 +454,9 @@ Mainwindow::Mainwindow(QWidget *parent) :
 
 void Mainwindow::DrawSignal(QPainter *p)
 {
-    //QRectF signRect(RAD_M_PULSE_RES-(scrCtX-dx),RAD_M_PULSE_RES-(scrCtY-dy),width(),height());
-    //QRectF screen(0,0,width(),height());
-
-    //p->drawImage(screen,*processing->radarData->img_ppi,signRect,Qt::AutoColor);
-    switch(drawMode)
-    {
-        case SGN_IMG_DRAW:
-        {
-            QRectF signRect(DISPLAY_RES-(scrCtX-dx),DISPLAY_RES-(scrCtY-dy),width(),height());
-            QRectF screen(0,0,width(),height());
-            p->drawImage(screen,*processing->radarData->img_ppi,signRect,Qt::AutoColor);
-
-            break;
-        }
-        case SGN_DIRECT_DRAW:
-    {/*
-        // _________direct drawing(without Qimage)
-        QPen pensgn(Qt::green);
-        QPen pentrr(QColor(0,50,60));
-        //pentrr.setWidth(((short)signsize)+1);
-        //pensgn.setWidth(((short)signsize)+1);
-        //QMutexLocker locker(&processing->mutex);
-        short ctX=scrCtX-dx;
-        short ctY=scrCtY-dy;
-        for(short azi = 1;azi<MAX_AZIR;++azi)
-        {
-            for(unsigned short range = 0;range < RAD_M_PULSE_RES;range++)
-            {
-                if(processing->radarData->signal_map.frame[azi].raw_map[range].displaylevel)
-                {
-                    pensgn.setColor(QColor(processing->radarData->signal_map.frame[azi].raw_map[range].displaylevel,255,0));
-                    p->setPen(pensgn);
-                    p->drawPoint((processing->radarData->signal_map.frame[azi].raw_map[range].x-RAD_M_PULSE_RES)*signsize+ctX,
-                                         (processing->radarData->signal_map.frame[azi].raw_map[range].y-RAD_M_PULSE_RES)*signsize+ctY);
-                }
-                else if(processing->radarData->signal_map.frame[azi].raw_map[range].vet)
-                {
-                    p->setPen(pentrr);
-                    p->drawPoint((processing->radarData->signal_map.frame[azi].raw_map[range].x - RAD_M_PULSE_RES)*signsize+ctX,
-                                         (processing->radarData->signal_map.frame[azi].raw_map[range].y - RAD_M_PULSE_RES)*signsize+ctY);
-                }
-
-            }
-        }*/
-
-
-    }
-    default:
-        break;
-    }
 }
 
-//void MainWindow::createMenus()
-//{
-//    m_fileMenu = menuBar()->addMenu(tr("&File"));
-//    m_fileMenu->addAction(a_openShp);
-//    m_fileMenu->addAction(a_openPlace);
-//    m_fileMenu->addAction(a_openSignal);
 
-//    //
-//    m_connectionMenu = menuBar()->addMenu(tr("&Connect"));
-//    m_connectionMenu->addAction(a_gpsOption);
-//}
 void Mainwindow::gpsOption()
 {
     //GPSDialog *dlg = new GPSDialog;
@@ -777,234 +709,10 @@ void Mainwindow::DrawGrid(QPainter* p,short centerX,short centerY)
 
 }
 
-void Mainwindow::DrawTarget(QPainter* p)
-{
-    //draw radar  target:
-    QPen penTargetRed(Qt::red);
-    penTargetRed.setWidth(3);
-    //QPen penARPATarget(Qt::yellow);
-    //penARPATarget.setWidth(3);
-    QPen penTargetBlue(Qt::darkBlue);
-    penTargetBlue.setWidth(2);
-    //penTargetBlue.setStyle(Qt::DashLine);
-    QPen penTrack(Qt::darkRed);
-    //QPen penARPATrack(Qt::darkYellow);
-    //draw radar targets
-    short x,y;
-    if(true)
-    {
-        for(uint i=0;i<processing->radarData->mTrackList.size();i++)
-        {
-            if(processing->radarData->mTrackList[i].state<TRACK_STABLE_STATE)continue;
-
-
-
-                p->setPen(penTrack);
-                short j;
-                //draw track:
-                for(j=0;j<((short)processing->radarData->mTrackList[i].object_list.size());j++)
-                {
-                    x = (processing->radarData->mTrackList[i].object_list[j].x + RAD_M_PULSE_RES)*signsize - (RAD_M_PULSE_RES*signsize-scrCtX)-dx;
-                    y = (RAD_M_PULSE_RES - processing->radarData->mTrackList[i].object_list[j].y)*signsize - (RAD_M_PULSE_RES*signsize-scrCtY)-dy;
-                    if(processing->radarData->mTrackList[i].tclass==RED_OBJ)p->drawPoint(x,y);
-                }
-                j--;
-                if(j<0)continue;
-                //printf("red");
-                if(processing->radarData->mTrackList[i].tclass==RED_OBJ)
-                {
-                    p->setPen(penTargetRed);
-
-                }
-                else
-                {
-                    p->setPen(penTargetBlue);
-                }
-                p->drawRect(x-6,y-6,12,12);
-                p->drawText(x-30,y-20,100,40,0,QString::number(i+1),0);
-                /*if(false)//processing->radarData->mTrackList[i].isMoving) // moving obj
-                {
-
-                    QPolygon poly;
-                    QPoint   point,point2;
-                    point2.setX(x+processing->radarData->mTrackList[i].velocity*500*sinf(processing->radarData->mTrackList[i].course));
-                    point2.setY(y-processing->radarData->mTrackList[i].velocity*500*cosf(processing->radarData->mTrackList[i].course));
-
-                    point.setX(x+10*sinf(processing->radarData->mTrackList[i].course));
-                    point.setY(y-10*cosf(processing->radarData->mTrackList[i].course));
-                    p->setPen(penTargetBlue);
-                    p->drawLine(point,point2);
-                    poly<<point;
-                    point.setX(x+10*sinf(processing->radarData->mTrackList[i].course+2.3562));
-                    point.setY(y-10*cosf(processing->radarData->mTrackList[i].course+2.3562));
-                    poly<<point;
-                    point.setX(x);
-                    point.setY(y);
-                    poly<<point;
-                    point.setX(x+10*sinf(processing->radarData->mTrackList[i].course-2.3562));
-                    point.setY(y-10*cosf(processing->radarData->mTrackList[i].course-2.3562));
-                    poly<<point;
-                    point.setX(x+10*sinf(processing->radarData->mTrackList[i].course));
-                    point.setY(y-10*cosf(processing->radarData->mTrackList[i].course));
-                    poly<<point;
-                    p->setPen(penTargetRed);
-                    p->drawPolygon(poly);
-                    p->drawText(x-30,y-20,100,40,0,QString::number(i+1),0);
-                }else*/
-
-            /*}
-            else if(processing->radarData->mTrackList[i].tclass==BLUE_OBJ)
-            {
-                p->setPen(penTargetBlue);
-                //printf("b");
-                p->drawRect(x-6,y-6,12,12);
-                p->drawText(x-30,y-20,100,40,0,QString::number(i+1),0);
-                p->drawLine(x,
-                            y,
-                            x+processing->radarData->mTrackList[i].velocity*500*sinf(processing->radarData->mTrackList[i].course),
-                            y-processing->radarData->mTrackList[i].velocity*500*cosf(processing->radarData->mTrackList[i].course));
-
-            }*/
-        }
-    }
-    /*else for(uint i=0;i<processing->radarData->mTrackList.size();i++)
-    {
-        if(!processing->radarData->mTrackList[i].state)continue;
-        short x,y;
-        p->setPen(penTrack);
-        short j;
-        //draw track:
-        for(j=0;j<((short)processing->radarData->mTrackList[i].object_list.size());j++)
-        {
-            x = (processing->radarData->mTrackList[i].object_list[j].x + RADAR_MAX_RESOLUTION)*signsize - (RADAR_MAX_RESOLUTION*signsize-scrCtX)-dx;
-            y = (RADAR_MAX_RESOLUTION - processing->radarData->mTrackList[i].object_list[j].y)*signsize - (RADAR_MAX_RESOLUTION*signsize-scrCtY)-dy;
-            p->drawPoint(x,y);
-        }
-        j--;
-        if(j<0)continue;
-
-
-            if(processing->radarData->mTrackList[i].isMoving) // moving obj
-            {
-
-                QPolygon poly;
-                QPoint   point,point2;
-                point2.setX(x+processing->radarData->mTrackList[i].velocity*500*sinf(processing->radarData->mTrackList[i].course));
-                point2.setY(y-processing->radarData->mTrackList[i].velocity*500*cosf(processing->radarData->mTrackList[i].course));
-
-                point.setX(x+10*sinf(processing->radarData->mTrackList[i].course));
-                point.setY(y-10*cosf(processing->radarData->mTrackList[i].course));
-                p->setPen(penTargetSub);
-                p->drawLine(point,point2);
-                poly<<point;
-                point.setX(x+10*sinf(processing->radarData->mTrackList[i].course+2.3562));
-                point.setY(y-10*cosf(processing->radarData->mTrackList[i].course+2.3562));
-                poly<<point;
-                point.setX(x);
-                point.setY(y);
-                poly<<point;
-                point.setX(x+10*sinf(processing->radarData->mTrackList[i].course-2.3562));
-                point.setY(y-10*cosf(processing->radarData->mTrackList[i].course-2.3562));
-                poly<<point;
-                point.setX(x+10*sinf(processing->radarData->mTrackList[i].course));
-                point.setY(y-10*cosf(processing->radarData->mTrackList[i].course));
-                poly<<point;
-                p->setPen(penTarget);
-                p->drawPolygon(poly);
-                p->drawText(x-30,y-20,100,40,0,QString::number(i+1),0);
-            }else
-            {
-                p->setPen(penTarget);
-                p->drawRect(x-6,y-6,12,12);
-                p->drawText(x-30,y-20,100,40,0,QString::number(i+1),0);
-            }
-
-
-    }*/
-    //draw arpa targets
-    /*
-    for(uint i=0;i<processing->arpaData->track_list.size();i++)
-    {
-        short x,y;
-        if(!processing->arpaData->track_list[i].lives)continue;
-        for(uint j=0;j<(processing->arpaData->track_list[i].object_list.size());j++)
-        {
-            x = processing->arpaData->track_list[i].object_list[j].centerX*scale+(scrCtX-dx);
-            y = processing->arpaData->track_list[i].object_list[j].centerY*scale+(scrCtY-dy);
-            //printf("\n x:%d y:%d",x,y);
-            p->setPen(penARPATrack);
-            p->drawPoint(x,y);
-        }
-        QPolygon poly;
-        QPoint point;
-
-        point.setX(x+10*sinf(processing->arpaData->track_list[i].course));
-        point.setY(y-10*cosf(processing->arpaData->track_list[i].course));
-        poly<<point;
-        point.setX(x+10*sinf(processing->arpaData->track_list[i].course+2.3562f));
-        point.setY(y-10*cosf(processing->arpaData->track_list[i].course+2.3562f));
-        poly<<point;
-        point.setX(x);
-        point.setY(y);
-        poly<<point;
-        point.setX(x+10*sinf(processing->arpaData->track_list[i].course-2.3562f));
-        point.setY(y-10*cosf(processing->arpaData->track_list[i].course-2.3562f));
-        poly<<point;
-        /*if(processing->arpaData->track_list[i].selected)
-        {
-            char buf[50];
-            p.setPen(penyellow);
-            sprintf(buf, "%3d:%3.3fNM:%3.3f\xB0",processing->arpaData->track_list[i].id,processing->arpaData->track_list[i].centerR/DEFAULT_NM, processing->arpaData->track_list[i].centerA*57.2957795);
-            QString info = QString::fromAscii(buf);
-            p.drawText(10,infoPosy,150,20,0,info);
-            infoPosy+=20;
-            if(processing->arpaData->track_list[i].id==curTargetId)
-            {
-                p.setPen(penyellow);
-                p.setBrush(Qt::red);
-            }
-                else
-            {
-                p.setPen(penTarget);
-                p.setBrush(Qt::red);
-            }
-
-        }else
-        {
-
-            p.setPen(pensubtaget);
-            p.setBrush(QColor(100,100,50,100));
-        }
-        p->setPen(penARPATarget);
-        //p->setBrush(Qt::red);
-        p->drawPolygon(poly);
-        p->drawText(x-20,y-20,20,40,0,QString::number(processing->arpaData->track_list[i].id),0);
-
-    }*/
-
-}
 void Mainwindow::drawAisTarget(QPainter *p)
 {
 
-    //draw radar  target:
-    QPen penTargetRed(Qt::red);
-    penTargetRed.setWidth(3);
 
-    float fx,fy;
-    for(uint i=0;i<arpa_data.ais_track_list.size();i++)
-    {
-            p->setPen(penTargetRed);
-            short j;
-            //draw track:
-            for(j=0;j<((short)arpa_data.ais_track_list[i].object_list.size());j++)
-            {
-                vnmap.ConvDegToScr(&fx,&fy,&arpa_data.ais_track_list[i].object_list[j].mlong,&arpa_data.ais_track_list[i].object_list[j].mlat);
-                short x = (fx*scale)+scrCtX-dx;
-                short y = (fy*scale)+scrCtY-dy;
-                p->drawPoint(x,y);
-                //printf("\nj:%d,%d,%d,%f,%f",j,x,y,arpa_data.ais_track_list[i].object_list[j].mlong,arpa_data.ais_track_list[i].object_list[j].mlat);
-            }
-    }
 }
 void Mainwindow::paintEvent(QPaintEvent *event)
 {
@@ -1023,7 +731,6 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw signal
     //DrawSignal(&p);
 
-    DrawTarget(&p);
     //drawAisTarget(&p);
     //draw cursor
     QPen penmousePointer(QColor(0x50ffffff));
@@ -1040,19 +747,16 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     p.drawLine(mousePointerX+15,mousePointerY,mousePointerX+10,mousePointerY);
     p.drawLine(mousePointerX,mousePointerY-10,mousePointerX,mousePointerY-15);
     p.drawLine(mousePointerX,mousePointerY+10,mousePointerX,mousePointerY+15);
-    float azi,range;
-    processing->radarData->getPolar((mousePointerX - scrCtX+dx)/scale,-(mousePointerY - scrCtY+dy)/scale,&azi,&range);
-    if(azi<0)azi+=PI_NHAN2;
-    azi = azi/CONST_PI*180.0;
-    range = range/CONST_NM;
-    p.drawText(mousePointerX+5,mousePointerY+5,100,20,0,QString::number(range,'g',4)+"|"+QString::number(azi,'g',4),0);
+
     //draw zooom
 
     //draw frame
 
     DrawViewFrame(&p);
-    if(((ui->tabWidget_2->currentIndex()==2)||(ui->tabWidget_2->currentIndex()==3))&&(img)&&(onConnectVideo))
+    if(((ui->tabWidget_2->currentIndex()==2)||(ui->tabWidget_2->currentIndex()==3)))
     {
+        if(onConnectVideo&&(img))
+        {
         //QMutexLocker locker(&mutex);
         QRect rect = ui->tabWidget_2->geometry();
         //QRect zoomRect(DISPLAY_RES-100,DISPLAY_RES-100,200,200);
@@ -1060,7 +764,18 @@ void Mainwindow::paintEvent(QPaintEvent *event)
         p.setPen(QPen(Qt::black));
         p.setBrush(QBrush(Qt::black));
         p.drawRect(rect);
-        p.drawImage(rect,*img,img->rect());        
+        p.drawImage(rect,*img,img->rect());
+        }
+        else
+        {
+            QRect rect = ui->tabWidget_2->geometry();
+            p.setPen(QPen(Qt::red));
+            QFont font;
+            font.setPointSize(50);
+            p.setFont(font);
+            rect.adjust(250,250,0,0);
+            p.drawText(rect,"NO VIDEO");
+        }
     }
 
 
@@ -1131,7 +846,7 @@ void Mainwindow::InitSetting()
     mousePointerY = height()/2;
     dxMax = height()/4-10;
     dyMax = height()/4-10;
-    processing->radarData->setTrueN(config.m_config.trueN);
+    //processing->radarData->setTrueN(config.m_config.trueN);
     //ui->horizontalSlider_2->setValue(config.m_config.cfarThresh);
 
     //ui->horizontalSlider_brightness->setValue(ui->horizontalSlider_brightness->maximum()/4);
@@ -1276,24 +991,6 @@ void Mainwindow::DrawViewFrame(QPainter* p)
                    QString::number(theta));
 
     }
-    if(displayAlpha){
-
-        pengrid.setWidth(10);
-        p->setPen(pengrid);
-         p->drawImage(10,height()-266,*processing->radarData->img_alpha);
-        p->drawRect(5,height()-266,processing->radarData->img_alpha->width()+5,processing->radarData->img_alpha->height()+5);
-        pengrid.setWidth(2);
-        pengrid.setColor(QColor(128,128,0,120));
-        p->setPen(pengrid);
-        for(short i=60;i<processing->radarData->img_alpha->height();i+=50)
-        {
-            p->drawLine(0,height()-i,processing->radarData->img_alpha->width()+5,height()-i);
-        }
-        for(short i=110;i<processing->radarData->img_alpha->width();i+=100)
-        {
-            p->drawLine(i,height()-266,i,height());
-        }
-    }
 
     //HDC dc = ui->tabWidget->getDC();
 }
@@ -1322,21 +1019,7 @@ void Mainwindow::UpdateRadarData()
         ReloadSetting();
     }
 
-    if(!processing->getIsDrawn())
-    {
-        if(processing->radarData->isClkAdcChanged)
-        {
-            //ui->comboBox_radar_resolution->setCurrentIndex(processing->radarData->clk_adc);
-            processing->radarData->setScalePPI(scale);
-            this->UpdateScale();
-            printf("\nsetScale:%d",processing->radarData->clk_adc);
-            processing->radarData->isClkAdcChanged = false;
-        }
-        processing->radarData->redrawImg();
-        update();
-        if(radar_state==DISCONNECTED)setRadarState(CONNECTED);
-    }
-    else if(!isScreenUp2Date)
+    if(!isScreenUp2Date)
     {
         updateTargets();
         update();
@@ -1360,7 +1043,7 @@ void Mainwindow::UpdateRadarData()
 }
 void Mainwindow::readBuffer()
 {
-    processing->ReadDataBuffer();
+    //processing->ReadDataBuffer();
 }
 void Mainwindow::InitTimer()
 {
@@ -1386,10 +1069,10 @@ void Mainwindow::InitTimer()
 
     scrUpdateTimer->start(30);//ENVDEP
     scrUpdateTimer->moveToThread(t);
-    processing = new dataProcessingThread();
-    processing->start();
-    connect(this,SIGNAL(destroyed()),processing,SLOT(deleteLater()));
-    connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
+//    processing = new dataProcessingThread();
+//    processing->start();
+//    connect(this,SIGNAL(destroyed()),processing,SLOT(deleteLater()));
+//    connect(dataPlaybackTimer,SIGNAL(timeout()),processing,SLOT(playbackRadarData()));
     //dataPlaybackTimer->moveToThread(t);
     connect(t,SIGNAL(finished()),t,SLOT(deleteLater()));
 
@@ -1564,8 +1247,7 @@ void Mainwindow::on_actionExit_triggered()
 {
 
     cvReleaseCapture(&g_Capture);
-    processing->stopThread();
-    processing->wait();
+
     ExitProgram();
 }
 void Mainwindow::ExitProgram()
@@ -1640,7 +1322,7 @@ void Mainwindow::sync1()//period 1 second
     //update signsize
     if(isScaleChanged ) {
 
-        processing->radarData->setScalePPI(scale);
+        //processing->radarData->setScalePPI(scale);
         isScaleChanged = false;
     }
     //update signal code:
@@ -1713,11 +1395,11 @@ void Mainwindow::on_actionRecording_toggled(bool arg1)
     if(arg1)
     {
         QDateTime now = QDateTime::currentDateTime();
-        processing->startRecord(now.toString("dd.MM-hh.mm.ss")+HR_FILE_EXTENSION);
+        //processing->startRecord(now.toString("dd.MM-hh.mm.ss")+HR_FILE_EXTENSION);
     }
     else
     {        
-        processing->stopRecord();
+        //processing->stopRecord();
     }
 }
 
@@ -1725,7 +1407,7 @@ void Mainwindow::on_actionOpen_rec_file_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this,    tr("Open signal file"), NULL, tr("HR signal record files (*.r2d)"));
     if(!filename.size())return;
-    processing->startReplay(filename);
+    //processing->startReplay(filename);
 }
 
 
@@ -1769,7 +1451,7 @@ void Mainwindow::on_actionAddTarget_toggled(bool arg1)
 
 void Mainwindow::on_actionClear_data_triggered()
 {
-    processing->radarData->resetData();
+    //processing->radarData->resetData();
     isScreenUp2Date = false;
 }
 
@@ -1784,7 +1466,7 @@ void Mainwindow::on_actionView_grid_triggered(bool checked)
 
 void Mainwindow::on_actionPlayPause_toggled(bool arg1)
 {
-    processing->togglePlayPause(arg1);
+    //processing->togglePlayPause(arg1);
     if(arg1)dataPlaybackTimer->start(25);else dataPlaybackTimer->stop();
 
 }
@@ -2150,32 +1832,13 @@ void Mainwindow::on_toolButton_centerView_clicked()
 
 void Mainwindow::on_comboBox_currentIndexChanged(int index)
 {
-    switch (index)
-    {
-    case 0:
-        processing->radarData->dataOver = m_only;
-        break;
-    case 1:
-        processing->radarData->dataOver = s_m_150;
-        break;
-    case 2:
-        processing->radarData->dataOver = s_m_200;
-        break;
-    case 3:
-        processing->radarData->dataOver = max_s_m_150;
-        break;
-    case 4:
-        processing->radarData->dataOver = max_s_m_200;
-        break;
-    default:
-        break;
-    }
+
 
 }
 
 void Mainwindow::on_comboBox_img_mode_currentIndexChanged(int index)
 {
-    processing->radarData->imgMode = imgDrawMode(index) ;
+//    processing->radarData->imgMode = imgDrawMode(index) ;
 }
 
 
@@ -2214,7 +1877,7 @@ void Mainwindow::on_toolButton_zoom_out_clicked()
 
 void Mainwindow::on_toolButton_reset_clicked()
 {
-    processing->radarData->resetData();
+//    processing->radarData->resetData();
 }
 
 void Mainwindow::on_toolButton_send_command_2_clicked()
@@ -2265,7 +1928,7 @@ void Mainwindow::on_toolButton_set_heading_clicked()
 {
     float heading = ui->textEdit_heading->text().toFloat();
     config.m_config.trueN = heading;
-    processing->radarData->setTrueN(config.m_config.trueN);
+//    processing->radarData->setTrueN(config.m_config.trueN);
 }
 
 void Mainwindow::on_toolButton_gps_update_clicked()
@@ -2276,7 +1939,7 @@ void Mainwindow::on_toolButton_gps_update_clicked()
 
 void Mainwindow::on_toolButton_centerZoom_clicked()
 {
-    processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
+//    processing->radarData->updateZoomRect(mousePointerX - scrCtX+dx,mousePointerY - scrCtY+dy);
 }
 
 uchar *qImageBuffer = NULL;

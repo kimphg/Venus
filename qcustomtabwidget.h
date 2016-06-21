@@ -4,14 +4,14 @@
 #include <QWidget>
 #include <QTabWidget>
 #include <qevent.h>
-#include <dataprocessingthread.h>
+//#include <dataprocessingthread.h>
 #include <QPainter>
 class QCustomTabWidget: public QTabWidget
 {
     Q_OBJECT
 public:
     explicit QCustomTabWidget(QWidget *parent = 0);
-    dataProcessingThread *processing;
+    //dataProcessingThread *processing;
 protected:
     void highLight();
     void resetView();
