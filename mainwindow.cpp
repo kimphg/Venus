@@ -2264,11 +2264,11 @@ void Mainwindow::ShowVideoCam()
     {
 
         if (g_IsIR)
-            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
-//            g_Capture = cvCaptureFromCAM(0);
+//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
+            g_Capture = cvCaptureFromCAM(0);
         else
-            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
-//            g_Capture = cvCaptureFromCAM(1);
+//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
+            g_Capture = cvCaptureFromCAM(1);
     }
 
     if (!g_Capture) // Capture fail
@@ -2319,7 +2319,12 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
     // 3: capture IR
     // other: do nothing
     if (!onConnectVideo)
+    {
+        ui->toolButton_video_connect->setChecked(false);
+        ui->toolButton_video_connect_2->setChecked(false);
         return;
+    }
+
 
     switch (index)
     {
@@ -2332,6 +2337,7 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         //......
         g_IsIR = false;
         videoTimer->start(20);
+        ui->toolButton_video_connect->setChecked(true);
 
         break;
     case 3:
@@ -2343,6 +2349,7 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         //......
         g_IsIR = true;
         videoTimer->start(20);
+        ui->toolButton_video_connect_2->setChecked(true);
         break;
 
     }
@@ -2362,12 +2369,12 @@ void Mainwindow::StartTracking(RECT inputRECT)
     
 }
 
-void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
+void Mainwindow::OnVideoConnect(bool checked)
 {
     onConnectVideo = checked;
     if(checked)
     {
-        ui->toolButton_video_connect->setText("Disconnect");
+        //ui->toolButton_video_connect->setText("Disconnect");
         if (!onConnectVideo)
             return;
 
@@ -2399,7 +2406,7 @@ void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
     }
     else
     {
-        ui->toolButton_video_connect->setText("Connect");
+       // ui->toolButton_video_connect->setText("Connect");
         videoTimer->stop();
         cvReleaseCapture(&g_Capture);
         g_Capture = NULL;
@@ -2407,5 +2414,14 @@ void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
 
     }
 
+}
 
+void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
+{
+    OnVideoConnect(checked);
+}
+
+void Mainwindow::on_toolButton_video_connect_2_toggled(bool checked)
+{
+    OnVideoConnect(checked);
 }
