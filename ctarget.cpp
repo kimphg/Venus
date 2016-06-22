@@ -11,8 +11,10 @@ CTarget::CTarget(QWidget *parent) : QFrame(parent)
     selected = false;
     resetView();
 }
-void CTarget::setCoordinates(float lat,float lon)
+void CTarget::setCoordinates(float lat,float lon,float rg,float az)
 {
+    azi = az;
+    range = rg;
     m_lat = lat;
     m_lon = lon;
 }

@@ -88,7 +88,6 @@ win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_superres2411d
 win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_video2411d
 win32:LIBS += -L$$PWD/../opencv/build/x86/vc10/lib/ -lopencv_videostab2411d
 
-
 #LIBS +=
 #win32:CONFIG(release, debug|release):INCLUDEPATH += $$PWD/armadillo/lib_winx86
 #win32:CONFIG(release, debug|release):DEPENDPATH += $$PWD/armadillo/lib_winx86

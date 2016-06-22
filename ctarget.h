@@ -10,9 +10,10 @@ class CTarget : public QFrame
 public:
     explicit CTarget(QWidget *parent = 0);
     float m_lat,m_lon;
+    float azi,range;
     QString id;
     bool selected ;
-    void setCoordinates(float lat,float lon);
+    void setCoordinates(float lat, float lon, float rg, float az);
     void setPosistion(short x, short y);
 protected:
 

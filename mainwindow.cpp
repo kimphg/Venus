@@ -232,14 +232,47 @@ void Mainwindow::updateTargets()
     {
         float x	=  - dx + scrCtX + ((targetList.at(i)->m_lon - config.m_config.m_long) * DEGREE_2_KM)*scale;// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
         float y	= - dy + scrCtY - (targetList.at(i)->m_lat - config.m_config.m_lat) * DEGREE_2_KM*scale;
-        targetList.at(i)->setPosistion(x,y);
+        float w = width()-10;
+        if(x*x+y*y>(w*w))
+        {
+                targetList.at(i)->hide();
+        }
+        else
+        {
+            targetList.at(i)->show();
+            targetList.at(i)->setPosistion(x,y);
+        }
+
         if(targetList.at(i)->selected)
         {
             targetList.at(i)->selected = false;
             selected_target_index = i;
+
+
         }
         if(selected_target_index == i)
         {
+            if(tcpSender->state()==QAbstractSocket::ConnectedState&&(ui->toolButton_radar_tracking->isChecked()))
+            {
+                short azi = targetList.at(i)->azi*100;
+                if(azi>18000)azi-=36000;
+                unsigned char bytes[8];
+                bytes[0] = 0x02;
+                bytes[1] = 0x06;
+                bytes[2] = 0x21;
+                bytes[3] = azi>>8;
+                bytes[4] = azi&0xff;
+                bytes[5] = 0x00;
+                bytes[6] = 0x00;
+                bytes[7] = 0x03;
+
+                tcpSender->write((char*)&bytes[0],8);
+                printf("radar track data\n");
+                //printf()
+            }else
+            {
+                printf("radar track data off \n");
+            }
             ui->label_status_lat_radar->setText( QString::number(targetList.at(i)->m_lat));
             ui->label_status_long_radar->setText(QString::number(targetList.at(i)->m_lon));
         }
@@ -1082,7 +1115,7 @@ void Mainwindow::InitTimer()
 //    processing->start();
 //    connect(this,SIGNAL(destroyed()),processing,SLOT(deleteLater()));
     connect(timer_lrad_control,SIGNAL(timeout()),this,SLOT(LradControl()));
-    timer_lrad_control->start(100);
+    timer_lrad_control->start(200);
     //dataPlaybackTimer->moveToThread(t);
     connect(t,SIGNAL(finished()),t,SLOT(deleteLater()));
 
@@ -1094,25 +1127,71 @@ void Mainwindow::InitTimer()
     t->start(QThread::TimeCriticalPriority);
 
 }
+bool controling = false;
+float control_sensitive;
+int ncount =0;
 void Mainwindow::LradControl()
-{/*
-    if(g_IsTracking)
+{
+
+    if(tcpSender->state()==QAbstractSocket::ConnectedState)
     {
-        short dx = (g_Tracker.m_RectCurrent.right + g_Tracker.m_RectCurrent.left)/2 - 400;
-        short dy = (g_Tracker.m_RectCurrent.bottom + g_Tracker.m_RectCurrent.top)/2 - 300;
-        if(tcpSender->state()==QAbstractSocket::ConnectedState)
+        if(g_IsTracking)
         {
-            tcpSender->write((char*)&bytes[0],8);
+            if(ui->tabWidget_2->currentIndex()==2)control_sensitive = 0.5f;
+            else
+            {control_sensitive = 0.2f;}
+            controling = true;
+            char dx = ((g_Tracker.m_RectCurrent.right + g_Tracker.m_RectCurrent.left)/2 - 400)/8.0*control_sensitive;
+            char dy = -((g_Tracker.m_RectCurrent.bottom + g_Tracker.m_RectCurrent.top)/2 - 300)/6.0*control_sensitive;
+            unsigned char bytes[8];
+            bytes[0] = 0x02;
+            bytes[1] = 0x04;
+            bytes[2] = 0x20;
+            bytes[3] = dx;
+            bytes[4] = dy;
+            bytes[5] = 0x03;
+
+            tcpSender->write((char*)&bytes[0],6);
             printf("data send \n");
         }
         else
         {
-            tcpSender->connectToHost("192.168.1.140",10100);
-            tcpSender->waitForConnected(500);
-            tcpSender->write((char*)&bytes[0],8);
-            printf("\nnot conected");
+            if(controling == true)
+            {
+                controling=false;
+                unsigned char bytes[8];
+                bytes[0] = 0x02;
+                bytes[1] = 0x04;
+                bytes[2] = 0x20;
+                bytes[3] = 0;
+                bytes[4] = 0;
+                bytes[5] = 0x03;
+                tcpSender->write((char*)&bytes[0],6);
+                printf("data send \n");
+            }
         }
-    }*/
+    }
+    else if(tcpSender->state()==QAbstractSocket::UnconnectedState)
+    {
+        if(tcpSender->state()!=QAbstractSocket::ConnectingState)
+        {
+            tcpSender->connectToHost("192.168.1.140",10100);
+            printf("Reconnect \n");
+        }
+    }
+    ncount++;
+    if(ncount==25)
+    {
+        ncount=0;
+        unsigned char bytes[8];
+        bytes[0] = 0x02;
+        bytes[1] = 0x02;
+        bytes[2] = 0x5c;
+        bytes[3] = 0x03;
+
+        tcpSender->write((char*)&bytes[0],4);
+
+    }
 
 }
 void Mainwindow::InitNetwork()
@@ -1150,6 +1229,7 @@ void Mainwindow::processARPA()
 
     while (udpARPA->hasPendingDatagrams())
     {
+
         QByteArray datagram;
         datagram.resize(udpARPA->pendingDatagramSize());
         udpARPA->readDatagram(datagram.data(), datagram.size());
@@ -1163,10 +1243,10 @@ void Mainwindow::processARPA()
             float tAzi = (*(list.begin()+3)).toFloat();
 
             //arpa_data.addARPA(tNum,tDistance,tRange);
-            tAzi = PI*tAzi/180;
 
-            float tX = tRange*sinf(tAzi);
-            float tY = - tRange*cosf(tAzi);
+
+            float tX = tRange*sin(PI*tAzi/180.0);
+            float tY = - tRange*cos(PI*tAzi/180.0);
             float tLat = config.m_config.m_lat + tX/DEGREE_2_KM;
             float tLon = config.m_config.m_long + tY/DEGREE_2_KM;
             short i=0;
@@ -1174,7 +1254,7 @@ void Mainwindow::processARPA()
             {
                 if(targetList.at(i)->id == tId)
                 {
-                    targetList.at(i)->setCoordinates(tLat,tLon); break;
+                    targetList.at(i)->setCoordinates(tLat,tLon,tRange,tAzi); break;
                 }
             }
             if(i==targetList.size())
@@ -1182,7 +1262,7 @@ void Mainwindow::processARPA()
                 CTarget*  tg1 = new CTarget(this);
                 tg1->show();
                 tg1->id = tId;
-                tg1->setCoordinates(tLat,tLon);
+                tg1->setCoordinates(tLat,tLon,tRange,tAzi);
                 targetList.append(tg1);
             }
             isScreenUp2Date = false;
@@ -1298,6 +1378,7 @@ void Mainwindow::on_actionConnect_triggered()
 }
 void Mainwindow::sync1()//period 1 second
 {
+    updateTargets();
     // display radar temperature:
     //ui->label_temp->setText(QString::number(processing->radarData->tempType)+"|"+QString::number(processing->radarData->temp)+"\260C");
 //    int n = 32*256.0f/((processing->radarData->noise_level[0]*256 + processing->radarData->noise_level[1]));
@@ -1927,7 +2008,7 @@ void Mainwindow::SetGPS(float mlat,float mlong)
     config.m_config.m_long = mlong;
     ui->text_latInput_2->setText(QString::number(mlat));
     ui->text_longInput_2->setText(QString::number(mlong));
-    vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 50,config.m_config.mapFilename.data());
+    vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 100,config.m_config.mapFilename.data());
     DrawMap();
     update();
 }
@@ -2183,11 +2264,11 @@ void Mainwindow::ShowVideoCam()
     {
 
         if (g_IsIR)
-//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
-            g_Capture = cvCaptureFromCAM(0);
+            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
+//            g_Capture = cvCaptureFromCAM(0);
         else
-//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
-            g_Capture = cvCaptureFromCAM(1);
+            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
+//            g_Capture = cvCaptureFromCAM(1);
     }
 
     if (!g_Capture) // Capture fail
@@ -2204,7 +2285,7 @@ void Mainwindow::ShowVideoCam()
         g_Frame = cvCreateImage(cvSize(800, 600), 8, 3);
 
     g_TrueFrame = cvQueryFrame(g_Capture);
-
+    //cv::imshow("img",g_TrueFrame->);
     if (!g_TrueFrame)
         return;
 
@@ -2250,7 +2331,7 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         // change url string for capture video
         //......
         g_IsIR = false;
-        videoTimer->start(40);
+        videoTimer->start(20);
 
         break;
     case 3:
@@ -2261,7 +2342,7 @@ void Mainwindow::on_tabWidget_2_currentChanged(int index)
         // change url string for capture video
         //......
         g_IsIR = true;
-        videoTimer->start(40);
+        videoTimer->start(20);
         break;
 
     }
@@ -2278,7 +2359,7 @@ void Mainwindow::StartTracking(RECT inputRECT)
     g_Tracker.InitForFirstFrame1(g_Frame, inputRECT);
     g_FrameHalf = cvCreateImage(cvSize(g_Tracker.m_ImageMaxX/2, g_Tracker.m_ImageMaxY/2), 8, 3);
     g_IsTracking = true;
-
+    
 }
 
 void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
@@ -2300,7 +2381,7 @@ void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
             // change url string for capture video
             //......
             g_IsIR = false;
-            videoTimer->start(40);
+            videoTimer->start(20);
 
             break;
         case 3:
@@ -2311,7 +2392,7 @@ void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
             // change url string for capture video
             //......
             g_IsIR = true;
-            videoTimer->start(40);
+            videoTimer->start(20);
             break;
 
         }
