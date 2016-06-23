@@ -387,7 +387,8 @@ void Mainwindow::mouseMoveEvent(QMouseEvent *event) {
         toBeTracked.setBottom(event->y());
         if(!toBeTracked.contains(event->x(),event->y())) isSelecting = false;
     }
-    if(isDraging&&(event->buttons() & Qt::LeftButton)) {
+    if(isDraging&&(event->buttons() & Qt::LeftButton))
+    {
 
         while(dx*dx+dy*dy>dxMax*dxMax)
         {
@@ -428,7 +429,8 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
                 toBeTracked.setRight(event->x()) ;
                 toBeTracked.setBottom( event->y());
             }
-        }else
+        }
+        else
         {
             g_IsTracking = false;
         }
