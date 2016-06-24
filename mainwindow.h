@@ -1,6 +1,5 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #define STR_RADAR_NOT_CONNECTED QString::fromUtf8("Chưa kết nối")
 #define STR_RADAR_CONNECTED     QString::fromUtf8("Đã kết nối")
 #define STR_RADAR_TRANSMITING   QString::fromUtf8("Đang phát")
@@ -213,13 +212,15 @@ private slots:
 
     //void on_toolButton_xl_nguong_2_toggled(bool checked);
 
-    void on_tabWidget_2_currentChanged(int index);
+    //void on_tabWidget_2_currentChanged(int index);
 
     void OnVideoConnect(bool checked);
 
     void on_toolButton_video_connect_toggled(bool checked);
 
     void on_toolButton_video_connect_2_toggled(bool checked);
+
+    void on_toolButton_ir_toggled(bool checked);
 
 private:
     void initActionsConnections();
