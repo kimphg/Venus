@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+//
 //#define mapWidth 2000
 //#define mapWidth mapWidth
 //#define mapHeight mapWidth
@@ -17,6 +17,12 @@ QList<CTarget*> targetList;
 short selected_target_index = 0;
 QRect toBeTracked;
 bool isSelecting = false;
+float           scale;
+CConfig         config;
+//pcap
+pcap_if_t *alldevs;
+pcap_if_t *d;
+pcap_t *adhandle;
 //static bool                 isAddingTarget=false;
 static QPixmap              *pMap=NULL;
 //static QImage               *sgn_img = new QImage(RADAR_MAX_RESOLUTION*2,RADAR_MAX_RESOLUTION*2,QImage::Format_RGB32);
@@ -46,7 +52,7 @@ static char                 gridOff = false;
 static char                 udpFailure = 0;//config file !!!
 static bool                 isScreenUp2Date,isSettingUp2Date,isDraging = false;
 static bool                 isScaleChanged =true;
-
+bool                        isNewTTM = false;
 QMutex                      mutex;
 QImage *img = NULL;
 static QStandardItemModel   modelTargetList;
@@ -63,6 +69,56 @@ short range = 1;
 //static CommandList command_queue;
 bool isDrawSubTg = true;
 //static unsigned short cur_object_index = 0;
+int wait_time = 0;
+void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
+{
+    //pcap_breakloop(adhandle);
+
+    (VOID)(param);
+    (VOID)(pkt_data);
+    wait_time++;
+    if(wait_time>50){
+        pcap_breakloop(adhandle);
+        wait_time = 0;
+    }
+/*
+
+    if(header->len<=500)return;
+    if(((*(pkt_data+36)<<8)|(*(pkt_data+37)))!=HR2D_UDP_PORT)
+    {
+        //printf("\nport:%d",((*(pkt_data+36)<<8)|(*(pkt_data+37))));
+        return;
+    }
+    dataB[iRec].len = header->len - UDP_HEADER_LEN;
+    memcpy(&dataB[iRec].data[0],pkt_data+UDP_HEADER_LEN,dataB[iRec].len);
+    iRec++;
+    if(iRec>=MAX_IREC)iRec = 0;
+    *pIsDrawn = false;
+    //printf("nhan duoc:%x\n",dataB[iRec].data[0]);
+
+    return;
+
+*/
+}
+inline short lon2x(float lon)
+{
+
+    //printf("scalse:%f",scale);
+    return  (- dx + scrCtX + ((lon - config.m_config.m_long) * DEGREE_2_KM)*scale);
+}
+inline short lat2y(float lat)
+{
+
+    return (- dy + scrCtY - ((lat - config.m_config.m_lat) * DEGREE_2_KM)*scale);
+}
+inline double y2lat(short y)
+{
+    return (y +dy - scrCtY )/scale/DEGREE_2_KM + config.m_config.m_lat;
+}
+inline double x2lon(short x)
+{
+    return (x +dx - scrCtX )/scale/DEGREE_2_KM + config.m_config.m_long;
+}
 int char2int( char input)
 {
   if(input >= '0' && input <= '9')
@@ -230,9 +286,10 @@ void Mainwindow::updateTargets()
 {
     for(short i = 0;i<targetList.size();i++)
     {
-        float x	=  - dx + scrCtX + ((targetList.at(i)->m_lon - config.m_config.m_long) * DEGREE_2_KM)*scale;// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
-        float y	= - dy + scrCtY - (targetList.at(i)->m_lat - config.m_config.m_lat) * DEGREE_2_KM*scale;
-        float w = width()-10;
+        float x	= lon2x(targetList.at(i)->m_lon) ;
+
+        float y	= lat2y(targetList.at(i)->m_lat);
+        float w = width()/2-10;
         if(x*x+y*y>(w*w))
         {
                 targetList.at(i)->hide();
@@ -252,27 +309,9 @@ void Mainwindow::updateTargets()
         }
         if(selected_target_index == i)
         {
-            if(tcpSender->state()==QAbstractSocket::ConnectedState&&(ui->toolButton_radar_tracking->isChecked()))
-            {
-                short azi = targetList.at(i)->azi*100;
-                if(azi>18000)azi-=36000;
-                unsigned char bytes[8];
-                bytes[0] = 0x02;
-                bytes[1] = 0x06;
-                bytes[2] = 0x21;
-                bytes[3] = azi>>8;
-                bytes[4] = azi&0xff;
-                bytes[5] = 0x00;
-                bytes[6] = 0x00;
-                bytes[7] = 0x03;
-
-                tcpSender->write((char*)&bytes[0],8);
-                printf("radar track data\n");
-                //printf()
-            }else
-            {
-                printf("radar track data off \n");
-            }
+            ui->label_radar_id->setText((targetList.at(i)->id));
+            ui->label_range_radar->setText(QString::number(targetList.at(i)->range));
+            ui->label_status_azi_radar->setText( QString::number(targetList.at(i)->azi));
             ui->label_status_lat_radar->setText( QString::number(targetList.at(i)->m_lat));
             ui->label_status_long_radar->setText(QString::number(targetList.at(i)->m_lon));
         }
@@ -324,12 +363,21 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
         if(trackingRect.right>799)trackingRect.right=799;
         if(trackingRect.top<0)trackingRect.top=0;
         if(trackingRect.bottom>599)trackingRect.bottom=599;
-
         StartTracking(trackingRect);
         isSelecting = false;
     }
-
-
+    ui->label_cursor_lat->setText(QString::number( y2lat(event->y())));
+    ui->label_cursor_lon->setText(QString::number( x2lon(event->x())));
+    float x = (event->x() - scrCtX+dx)/scale/CONST_NM;
+    float y = -(event->y() - scrCtY+dy)/scale/CONST_NM;
+    float azi =  atanf(x/y);
+            if(y<0)azi+=PI;
+            if(azi<0)azi += PI_NHAN2;
+    float range = sqrt(x*x+y*y);
+    ui->label_cursor_azi->setText(QString::number( azi/PI*180));
+    ui->label_cursor_range->setText(QString::number( range,'g',2));
+    //ui->label_cursor_azi->setText(QString::number( y2azi(event->y())));
+    //ui->label_cursor_lon->setText(QString::number( x2lon(event->x())));
 //    if(isAddingTarget)
 //    {
 //        float xRadar = (mouseX - scrCtX+dx)/signsize ;//coordinates in  radar xy system
@@ -790,7 +838,10 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     p.drawLine(mousePointerX+15,mousePointerY,mousePointerX+10,mousePointerY);
     p.drawLine(mousePointerX,mousePointerY-10,mousePointerX,mousePointerY-15);
     p.drawLine(mousePointerX,mousePointerY+10,mousePointerX,mousePointerY+15);
-
+    QPoint point(height()/2-dx,height()/2-dy);
+    p.drawEllipse(point,10,10);
+    QPoint point2(height()/2-dx+40*sin(config.m_config.trueN/180.0*PI),height()/2-dy-40*cos(config.m_config.trueN/180.0*PI));
+    p.drawLine(point,point2);
     //draw zooom
 
     //draw frame
@@ -802,11 +853,10 @@ void Mainwindow::paintEvent(QPaintEvent *event)
         {
         //QMutexLocker locker(&mutex);
         QRect rect = ui->groupBox_video->geometry();
-        //QRect zoomRect(DISPLAY_RES-100,DISPLAY_RES-100,200,200);
-        //rect.adjust(4,30,-5,-5);
-        p.setPen(QPen(Qt::black));
-        p.setBrush(QBrush(Qt::black));
-        p.drawRect(rect);
+
+        //p.setPen(QPen(Qt::black));
+        //p.setBrush(QBrush(Qt::black));
+        //p.drawRect(rect);
         p.drawImage(rect,*img,img->rect());
         }
         else
@@ -1124,11 +1174,12 @@ int ncount =0;
 void Mainwindow::LradControl()
 {
 
+
     if(tcpSender->state()==QAbstractSocket::ConnectedState)
     {
-        if(g_IsTracking)
+        if(g_IsTracking)//camera tracking
         {
-            if(g_IsIR)control_sensitive = 0.5f;
+            if(g_IsIR)control_sensitive = 0.6f;
             else
             {control_sensitive = 0.2f;}
             controling = true;
@@ -1145,25 +1196,91 @@ void Mainwindow::LradControl()
             tcpSender->write((char*)&bytes[0],6);
             printf("data send \n");
         }
-        else
+        else//camera traking off
+        if(controling == true)
         {
-            if(controling == true)
+            controling=false;
+            unsigned char bytes[8];
+            bytes[0] = 0x02;
+            bytes[1] = 0x04;
+            bytes[2] = 0x20;
+            bytes[3] = 0;
+            bytes[4] = 0;
+            bytes[5] = 0x03;
+            tcpSender->write((char*)&bytes[0],6);
+            printf("data send \n");
+        }
+        else if(isNewTTM)// radar tracking
+        {
+            isNewTTM = false;
+            for(short i = 0;i<targetList.size();i++)
             {
-                controling=false;
-                unsigned char bytes[8];
-                bytes[0] = 0x02;
-                bytes[1] = 0x04;
-                bytes[2] = 0x20;
-                bytes[3] = 0;
-                bytes[4] = 0;
-                bytes[5] = 0x03;
-                tcpSender->write((char*)&bytes[0],6);
-                printf("data send \n");
+                if(selected_target_index == i)
+                {
+                    if(tcpSender->state()==QAbstractSocket::ConnectedState&&(ui->toolButton_radar_tracking->isChecked()))
+                    {
+                        short azi = (targetList.at(i)->azi-config.m_config.trueN)*100;
+                        if(azi>18000)azi-=36000;
+                        unsigned char bytes[8];
+                        bytes[0] = 0x02;
+                        bytes[1] = 0x06;
+                        bytes[2] = 0x21;
+                        bytes[3] = azi>>8;
+                        bytes[4] = azi&0xff;
+                        bytes[5] = 0x00;
+                        bytes[6] = 0x00;
+                        bytes[7] = 0x03;
+
+                        tcpSender->write((char*)&bytes[0],8);
+                        printf("radar track data\n");
+                        //printf()
+                    }else
+                    {
+                        printf("radar track data off \n");
+                    }
+                }
             }
         }
+        else if(false)
+        {
+
+            //ui->label_cursor_lat->setText(QString::number( y2lat(event->y())));
+            //ui->label_cursor_lon->setText(QString::number( x2lon(event->x())));
+            float x = (mousePointerX- scrCtX+dx)/scale/CONST_NM;
+            float y = -(mousePointerY - scrCtY+dy)/scale/CONST_NM;
+            float azi =  atanf(x/y);
+            if(y<0)azi+=PI;
+            azi = azi/PI*180;
+            printf("\nazi:%f",azi);
+            if(tcpSender->state()==QAbstractSocket::ConnectedState&&(ui->toolButton_radar_tracking->isChecked()))
+            {
+                short kazi = (azi-config.m_config.trueN)*100;
+                if(kazi>18000)kazi-=36000;
+                if(kazi<-18000)kazi+=36000;
+                unsigned char bytes[8];
+                bytes[0] = 0x02;
+                bytes[1] = 0x06;
+                bytes[2] = 0x21;
+                bytes[3] = kazi>>8;
+                bytes[4] = kazi&0xff;
+                bytes[5] = 0x00;
+                bytes[6] = 0x00;
+                bytes[7] = 0x03;
+                tcpSender->write((char*)&bytes[0],8);
+                printf("radar track data\n");
+                //printf()
+            }else
+            {
+                printf("radar track data off \n");
+            }
+
+        }
+
     }
-    else if(tcpSender->state()==QAbstractSocket::UnconnectedState)
+    else
     {
+
+        ui->label_connect_state->setText("LRAD: Not connected");
         if(tcpSender->state()!=QAbstractSocket::ConnectingState)
         {
             tcpSender->connectToHost("192.168.1.140",10100);
@@ -1179,8 +1296,11 @@ void Mainwindow::LradControl()
         bytes[1] = 0x02;
         bytes[2] = 0x5c;
         bytes[3] = 0x03;
-
-        tcpSender->write((char*)&bytes[0],4);
+        if(tcpSender->state()==QAbstractSocket::ConnectedState)
+        {
+            ui->label_connect_state->setText("LRAD: Connected");
+            tcpSender->write((char*)&bytes[0],4);
+        }
 
     }
 
@@ -1209,15 +1329,44 @@ void Mainwindow::InitNetwork()
         udpSendSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 10);
         tcpSender = new QTcpSocket(this);
 //        tcpSender->connectToHost(ui->textEdit_pt_port_2->text(),ui->textEdit_pt_port->text().toInt());tcpSender->connectToHost("192.168.1.140",10100);
-        udpARPA = new QUdpSocket(this);tcpSender->connectToHost("192.168.1.140",10100);
+        udpARPA = new QUdpSocket(this);
         udpARPA->bind(4444,QUdpSocket::ShareAddress);
         connect(udpARPA, SIGNAL(readyRead()),
                 this, SLOT(processARPA()));
+        //pcap
+
+        char errbuf[PCAP_ERRBUF_SIZE];
+        //
+        /* Retrieve the device list on the local machine */
+        if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
+        {
+
+            printf( errbuf); return;
+        }
+
+
+        d=alldevs;
+        if ( (adhandle= pcap_open(d->name,          // name of the device
+                                      65536,            // portion of the packet to capture
+                                                        // 65536 guarantees that the whole packet will be captured on all the link layers
+                                      PCAP_OPENFLAG_PROMISCUOUS,    // promiscuous mode
+                                      1000,             // read timeout
+                                      NULL,             // authentication on the remote machine
+                                      errbuf            // error buffer
+                                      ) ) == NULL)
+            {
+                /* Free the device list */
+                pcap_freealldevs(alldevs);
+                return ;
+            }
+        printf("\nlistening on %s...\n", d->name);
+
+        /* start the capture */
 
 }
 void Mainwindow::processARPA()
 {
-
+    //return;
     while (udpARPA->hasPendingDatagrams())
     {
 
@@ -1234,10 +1383,8 @@ void Mainwindow::processARPA()
             float tAzi = (*(list.begin()+3)).toFloat();
 
             //arpa_data.addARPA(tNum,tDistance,tRange);
-
-
-            float tX = tRange*sin(PI*tAzi/180.0);
-            float tY = - tRange*cos(PI*tAzi/180.0);
+            float tX = tRange*cos(PI*tAzi/180.0)*CONST_NM;
+            float tY = tRange*sin(PI*tAzi/180.0)*CONST_NM;
             float tLat = config.m_config.m_lat + tX/DEGREE_2_KM;
             float tLon = config.m_config.m_long + tY/DEGREE_2_KM;
             short i=0;
@@ -1257,6 +1404,7 @@ void Mainwindow::processARPA()
                 targetList.append(tg1);
             }
             isScreenUp2Date = false;
+            isNewTTM = true;
         }
     }
 
@@ -1521,10 +1669,10 @@ void Mainwindow::on_actionOpen_map_triggered()
 }
 void Mainwindow::showTime()
 {
-    /QDateTime time = QDateTime::currentDateTime();
+    QDateTime time = QDateTime::currentDateTime();
     QString text = time.toString("hh:mm:ss");
     ui->label_date->setText(text);
-    text = time.toString("dd/MM/yy");
+    text = time.toString("dd-MM-yy");
     ui->label_time->setText(text);
 }
 
@@ -2255,11 +2403,11 @@ void Mainwindow::ShowVideoCam()
     {
 
         if (g_IsIR)
-//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
-            g_Capture = cvCaptureFromCAM(0);
+            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:1554/ch0");
+//            g_Capture = cvCaptureFromCAM(0);
         else
-//            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
-            g_Capture = cvCaptureFromCAM(1);
+            g_Capture = cvCaptureFromFile("rtsp://192.168.1.140:554/axis-media/media.amp");
+//            g_Capture = cvCaptureFromCAM(1);
     }
 
     if (!g_Capture) // Capture fail
@@ -2300,7 +2448,8 @@ void Mainwindow::ShowVideoCam()
      if(qImageBuffer)
          delete qImageBuffer;
      img = IplImageToQImage(g_Frame,NULL,0,255);
-     repaint();
+     //cvShowImage("test",g_Frame);
+     update();
 
 }
 
@@ -2325,15 +2474,14 @@ void Mainwindow::OnVideoConnect(bool checked)
     {
         //ui->toolButton_video_connect->setText("Disconnect");
 
-
-
             videoTimer->stop();
             cvReleaseCapture(&g_Capture);
             g_Capture = NULL;
             g_IsTracking = false;
             // change url string for capture video
             //......
-            videoTimer->start(20);
+            if(g_IsIR)videoTimer->start(10);
+            else videoTimer->start(20);
     }
     else
     {
@@ -2349,6 +2497,7 @@ void Mainwindow::OnVideoConnect(bool checked)
 
 void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
 {
+    //pcap_loop(adhandle, 0, packet_handler, NULL);
     OnVideoConnect(checked);
 }
 
@@ -2371,7 +2520,13 @@ void Mainwindow::on_toolButton_ir_toggled(bool checked)
     g_IsTracking = false;
     // change url string for capture video
     //......
-    videoTimer->start(20);
+    if(g_IsIR)videoTimer->start(10);
+    else videoTimer->start(20);
     ui->toolButton_video_connect->setChecked(true);
     return;
+}
+
+void Mainwindow::on_toolButton_video_connect_clicked()
+{
+
 }

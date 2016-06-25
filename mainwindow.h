@@ -5,6 +5,8 @@
 #define STR_RADAR_TRANSMITING   QString::fromUtf8("Đang phát")
 #define SCR_X_MIN_LIMIT   60
 #define HR_FILE_EXTENSION ".r2d"
+#define HAVE_REMOTE
+#include <pcap.h>
 #include <QtNetwork>
 #include <QMainWindow>
 #include <QtCore>
@@ -22,6 +24,7 @@
 #include <QHostAddress>
 #include "ctarget.h"
 #include "Tracker.h"
+
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
 //#include <QtSerialPort/QSerialPort>
@@ -80,10 +83,10 @@ private:
     //
     //CConfig         m_config;
     //CpView  *       m_view;
-    float           scale;
+    //float           scale;
     QTimer          *drawTimer;
     QPoint          view_pos;
-    CConfig         config;
+
 
 
 
@@ -221,6 +224,8 @@ private slots:
     void on_toolButton_video_connect_2_toggled(bool checked);
 
     void on_toolButton_ir_toggled(bool checked);
+
+    void on_toolButton_video_connect_clicked();
 
 private:
     void initActionsConnections();
