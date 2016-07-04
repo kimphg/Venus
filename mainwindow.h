@@ -120,7 +120,7 @@ public:
 private slots:
     void LradControl();
     void ShowVideoCam();
-    void readBuffer();
+    void updateData();
     void sync1();
     void ExitProgram();
     void gpsOption();

@@ -3,7 +3,7 @@
 #include <QWidget>
 #include <QFrame>
 #include <qevent.h>
-
+#include <QPainter>
 class CTarget : public QFrame
 {
     Q_OBJECT
@@ -12,11 +12,11 @@ public:
     float m_lat,m_lon;
     float azi,range;
     QString id;
-    bool selected ;
+    bool selected, clicked;
     void setCoordinates(float lat, float lon, float rg, float az);
     void setPosistion(short x, short y);
+    void setSelected(bool selected);
 protected:
-
     void highLight();
     void resetView();
     void hoverEnter(QHoverEvent *event);
@@ -25,7 +25,7 @@ protected:
     void OnClick();
 
     bool event(QEvent *event);
-
+    void paintEvent(QPaintEvent *event);
 
 signals:
 

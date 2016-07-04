@@ -5124,6 +5124,20 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QComboBox" name="comboBox">
+       <item>
+        <property name="text">
+         <string>Radar TTM tracking</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Cursor tracking</string>
+        </property>
+       </item>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QCustomGroupBox" name="groupBox_8">

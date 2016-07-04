@@ -289,8 +289,10 @@ void Mainwindow::updateTargets()
         float x	= lon2x(targetList.at(i)->m_lon) ;
 
         float y	= lat2y(targetList.at(i)->m_lat);
-        float w = width()/2-10;
-        if(x*x+y*y>(w*w))
+        float w = scrCtY-20;
+        float dx = x-scrCtX;
+        float dy = y-scrCtY;
+        if(dx*dx+dy*dy>(w*w))
         {
                 targetList.at(i)->hide();
         }
@@ -300,12 +302,12 @@ void Mainwindow::updateTargets()
             targetList.at(i)->setPosistion(x,y);
         }
 
-        if(targetList.at(i)->selected)
+        if(targetList.at(i)->clicked)
         {
-            targetList.at(i)->selected = false;
+
             selected_target_index = i;
 
-
+            targetList.at(i)->clicked = false;
         }
         if(selected_target_index == i)
         {
@@ -314,6 +316,10 @@ void Mainwindow::updateTargets()
             ui->label_status_azi_radar->setText( QString::number(targetList.at(i)->azi));
             ui->label_status_lat_radar->setText( QString::number(targetList.at(i)->m_lat));
             ui->label_status_long_radar->setText(QString::number(targetList.at(i)->m_lon));
+        }
+        else
+        {
+            targetList.at(i)->setSelected(false);// = false;
         }
         //printf("\nx:%f y:%f",x,y);
     }
@@ -1124,9 +1130,10 @@ void Mainwindow::UpdateRadarData()
     }
     ui->tableTargetList->setModel(model);*/
 }
-void Mainwindow::readBuffer()
+void Mainwindow::updateData()
 {
     //processing->ReadDataBuffer();
+    updateTargets();
 }
 void Mainwindow::InitTimer()
 {
@@ -1144,7 +1151,7 @@ void Mainwindow::InitTimer()
     syncTimer1s->start(1000);
     syncTimer1s->moveToThread(t);
     //
-    connect(readBuffTimer,SIGNAL(timeout()),this,SLOT(readBuffer()));
+    connect(readBuffTimer,SIGNAL(timeout()),this,SLOT(updateData()));
     readBuffTimer->start(50);
     readBuffTimer->moveToThread(t1);
     //
@@ -1376,35 +1383,40 @@ void Mainwindow::processARPA()
         //printf(datagram.data());
         QString str(datagram.data());
         QStringList list = str.split(",");
-        if(*list.begin()=="$RATTM")
+        for(int i = 0;i<list.size();i++)
         {
-            QString tId = (*(list.begin()+1));
-            float tRange = (*(list.begin()+2)).toFloat();
-            float tAzi = (*(list.begin()+3)).toFloat();
+           if(list.at(i) =="$RATTM")
+           {
+               if(i+4>list.length())break;
+               QString tId = ((list.at(i+1)));
+               float tRange = ((list.at(i+2))).toFloat();
+               float tAzi = ((list.at(i+3))).toFloat();
 
-            //arpa_data.addARPA(tNum,tDistance,tRange);
-            float tX = tRange*cos(PI*tAzi/180.0)*CONST_NM;
-            float tY = tRange*sin(PI*tAzi/180.0)*CONST_NM;
-            float tLat = config.m_config.m_lat + tX/DEGREE_2_KM;
-            float tLon = config.m_config.m_long + tY/DEGREE_2_KM;
-            short i=0;
-            for(;i<targetList.size();i++)
-            {
-                if(targetList.at(i)->id == tId)
-                {
-                    targetList.at(i)->setCoordinates(tLat,tLon,tRange,tAzi); break;
-                }
-            }
-            if(i==targetList.size())
-            {
-                CTarget*  tg1 = new CTarget(this);
-                tg1->show();
-                tg1->id = tId;
-                tg1->setCoordinates(tLat,tLon,tRange,tAzi);
-                targetList.append(tg1);
-            }
-            isScreenUp2Date = false;
-            isNewTTM = true;
+               //arpa_data.addARPA(tNum,tDistance,tRange);
+               float tX = tRange*cos(PI*tAzi/180.0)*CONST_NM;
+               float tY = tRange*sin(PI*tAzi/180.0)*CONST_NM;
+               float tLat = config.m_config.m_lat + tX/DEGREE_2_KM;
+               float tLon = config.m_config.m_long + tY/DEGREE_2_KM;
+               short i = 0;
+               for(;i<targetList.size();i++)
+               {
+                   if(targetList.at(i)->id == tId)
+                   {
+                       targetList.at(i)->setCoordinates(tLat,tLon,tRange,tAzi); break;
+                   }
+               }
+               if( i == targetList.size())
+               {
+                   CTarget*  tg1 = new CTarget(this);
+                   tg1->show();
+                   tg1->id = tId;
+                   tg1->setCoordinates(tLat,tLon,tRange,tAzi);
+                   targetList.append(tg1);
+               }
+               isScreenUp2Date = false;
+               isNewTTM = true;
+
+           }
         }
     }
 
@@ -2109,14 +2121,15 @@ void Mainwindow::on_toolButton_map_toggled(bool checked)
 
 void Mainwindow::on_toolButton_zoom_in_clicked()
 {
-    if(range>0)range--;
+    if(range<7)range++;
+
     UpdateScale();
     DrawMap();
 }
 
 void Mainwindow::on_toolButton_zoom_out_clicked()
 {
-    if(range<7)range++;
+    if(range>0)range--;
     UpdateScale();
     DrawMap();
 }

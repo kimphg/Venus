@@ -9,6 +9,7 @@ CTarget::CTarget(QWidget *parent) : QFrame(parent)
     this->setCursor(Qt::PointingHandCursor);
     setGeometry(0,0,SIZE,SIZE);
     selected = false;
+    clicked = false;
     resetView();
 }
 void CTarget::setCoordinates(float lat,float lon,float rg,float az)
@@ -36,12 +37,24 @@ void CTarget::hoverMove(QHoverEvent *)
     highLight();
 
 }
+void CTarget::paintEvent(QPaintEvent *event)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    if(selected)p.setPen(QPen(Qt::magenta));
+        else
+        p.setPen(QPen(Qt::cyan));
+    QFont font;
+    font.setPointSize(12);
+    p.setFont(font);
+    p.drawText(4,0,20,20,0,QString::number(this->id.toInt()));
+}
 void CTarget::highLight()
 {
 
 
-    this->setStyleSheet("border: 2px dashed magenta;");
-
+    if(selected)this->setStyleSheet("border: 2px dashed magenta;");
+    else this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  cyan;");
     repaint();
 }
 void CTarget::resetView()
@@ -49,16 +62,25 @@ void CTarget::resetView()
     //this->setStyleSheet("background-color: rgb(16, 32, 64);color:rgb(255, 255, 255);");
     //this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px solid red;");
 
-    this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  cyan;");
-
+    //this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  cyan;");
+    if(selected)this->setStyleSheet("border: 2px dashed magenta;");
+    else this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  cyan;");
     //setGeometry(400,400,22,22);
     repaint();
 
 }
 void CTarget::OnClick()
 {
-    selected = !selected;
-    highLight();
+    setSelected(true);
+    clicked = true;
+    resetView();
+    //this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  blue;");
+    //this->
+}
+void CTarget::setSelected(bool selected)
+{
+    this->selected = selected;
+    resetView();
     //this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  blue;");
     //this->
 }
