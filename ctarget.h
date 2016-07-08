@@ -9,7 +9,7 @@ class CTarget : public QFrame
     Q_OBJECT
 public:
     explicit CTarget(QWidget *parent = 0);
-    float m_lat,m_lon;
+    float m_lat,m_lon,speed;
     float azi,range;
     QString id;
     bool selected, clicked;

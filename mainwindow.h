@@ -6,7 +6,7 @@
 #define SCR_X_MIN_LIMIT   60
 #define HR_FILE_EXTENSION ".r2d"
 #define HAVE_REMOTE
-#include <pcap.h>
+//#include <pcap.h>
 #include <QtNetwork>
 #include <QMainWindow>
 #include <QtCore>
@@ -17,7 +17,7 @@
 #include <gpsdialog.h>
 //#include <dataprocessingthread.h>
 #include <onexitdialog.h>
-#include <C_radar_data.h>
+//#include <C_radar_data.h>
 #include <QFileDialog>
 #include <QImage>
 #include <QTcpSocket>
@@ -226,6 +226,14 @@ private slots:
     void on_toolButton_ir_toggled(bool checked);
 
     void on_toolButton_video_connect_clicked();
+
+    void on_toolButton_radar_tracking_toggled(bool checked);
+
+    void on_toolButton_cursor_control_toggled(bool checked);
+
+    void on_toolButton_clear_target_clicked();
+
+    void on_toolButton_grid_clicked();
 
 private:
     void initActionsConnections();

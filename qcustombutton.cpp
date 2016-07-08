@@ -26,7 +26,7 @@ void QCustomButton::hoverMove(QHoverEvent *)
 }
 void QCustomButton::highLight()
 {
-    if(this->isChecked())this->setStyleSheet("background-color: rgb(10, 20, 20);color:rgb(255, 255, 255);font: bold 12pt \"MS Shell Dlg 2\";");
+    if(this->isChecked())this->setStyleSheet("background-color: rgb(40, 80, 60);color:rgb(255, 255, 255);font: bold 12pt \"MS Shell Dlg 2\";");
         else
         this->setStyleSheet("background-color: rgb(40, 60, 90);color:rgb(255, 255, 255);font:  12pt \"MS Shell Dlg 2\";");
 
@@ -36,7 +36,7 @@ void QCustomButton::highLight()
 }
 void QCustomButton::resetView()
 {
-    if(this->isChecked())this->setStyleSheet("background-color: rgb(10, 20, 20);color:rgb(200, 200, 200);font: bold 12pt \"MS Shell Dlg 2\";");
+    if(this->isChecked())this->setStyleSheet("background-color: rgb(40, 80, 60);color:rgb(200, 200, 200);font: bold 12pt \"MS Shell Dlg 2\";");
         else
         this->setStyleSheet("background-color: rgb(16, 32, 64);color:rgb(255, 255, 255);font: 12pt \"MS Shell Dlg 2\";");
 

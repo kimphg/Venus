@@ -24,8 +24,6 @@ SOURCES += main.cpp\
     vnmap.cpp \
     Config.cpp \
     gpsdialog.cpp \
-    C_radar_data.cpp \
-    c_arpa_data.cpp \
     onexitdialog.cpp \
     qcustombutton.cpp \
     qcustomframe.cpp \
@@ -39,8 +37,6 @@ HEADERS  += mainwindow.h \
     vnmap.h \
     Config.h \
     gpsdialog.h \
-    C_radar_data.h \
-    c_arpa_data.h \
     onexitdialog.h \
     qcustombutton.h \
     qcustomframe.h \

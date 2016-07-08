@@ -7,6 +7,8 @@
 #define CONST_NM 1.825f
 #define CONST_PI 3.141592654f
 #define MAX_VIEW_RANGE_KM 50
+#define PI 3.141592654f
+#define PI_NHAN2 6.28f
 #define DEGREE_2_KM 111.31949079327357f
 #include <queue>
 short scrCtX, scrCtY;
@@ -20,9 +22,9 @@ bool isSelecting = false;
 float           scale;
 CConfig         config;
 //pcap
-pcap_if_t *alldevs;
-pcap_if_t *d;
-pcap_t *adhandle;
+//pcap_if_t *alldevs;
+//pcap_if_t *d;
+//pcap_t *adhandle;
 //static bool                 isAddingTarget=false;
 static QPixmap              *pMap=NULL;
 //static QImage               *sgn_img = new QImage(RADAR_MAX_RESOLUTION*2,RADAR_MAX_RESOLUTION*2,QImage::Format_RGB32);
@@ -41,7 +43,7 @@ CTracker                    g_Tracker;
 bool                        g_IsIR = false;
 bool displayAlpha = false;
 //static short                currMaxRange = RADAR_MAX_RESOLUTION;
-static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
+//static short                currMaxAzi = MAX_AZIR,currMinAzi = 0;
 static short                dxMax,dyMax;
 //static C_ARPA_data          arpa_data;
 //static short                curAzir=-1;//,drawAzir=0;
@@ -70,52 +72,52 @@ short range = 1;
 bool isDrawSubTg = true;
 //static unsigned short cur_object_index = 0;
 int wait_time = 0;
-void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
-{
-    //pcap_breakloop(adhandle);
+//void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
+//{
+//    //pcap_breakloop(adhandle);
 
-    (VOID)(param);
-    (VOID)(pkt_data);
-    wait_time++;
-    if(wait_time>50){
-        pcap_breakloop(adhandle);
-        wait_time = 0;
-    }
-/*
+//    (VOID)(param);
+//    (VOID)(pkt_data);
+//    wait_time++;
+//    if(wait_time>50){
+//        pcap_breakloop(adhandle);
+//        wait_time = 0;
+//    }
+///*
 
-    if(header->len<=500)return;
-    if(((*(pkt_data+36)<<8)|(*(pkt_data+37)))!=HR2D_UDP_PORT)
-    {
-        //printf("\nport:%d",((*(pkt_data+36)<<8)|(*(pkt_data+37))));
-        return;
-    }
-    dataB[iRec].len = header->len - UDP_HEADER_LEN;
-    memcpy(&dataB[iRec].data[0],pkt_data+UDP_HEADER_LEN,dataB[iRec].len);
-    iRec++;
-    if(iRec>=MAX_IREC)iRec = 0;
-    *pIsDrawn = false;
-    //printf("nhan duoc:%x\n",dataB[iRec].data[0]);
+//    if(header->len<=500)return;
+//    if(((*(pkt_data+36)<<8)|(*(pkt_data+37)))!=HR2D_UDP_PORT)
+//    {
+//        //printf("\nport:%d",((*(pkt_data+36)<<8)|(*(pkt_data+37))));
+//        return;
+//    }
+//    dataB[iRec].len = header->len - UDP_HEADER_LEN;
+//    memcpy(&dataB[iRec].data[0],pkt_data+UDP_HEADER_LEN,dataB[iRec].len);
+//    iRec++;
+//    if(iRec>=MAX_IREC)iRec = 0;
+//    *pIsDrawn = false;
+//    //printf("nhan duoc:%x\n",dataB[iRec].data[0]);
 
-    return;
+//    return;
 
-*/
-}
-inline short lon2x(float lon)
+//*/
+//}
+ short lon2x(float lon)
 {
 
     //printf("scalse:%f",scale);
     return  (- dx + scrCtX + ((lon - config.m_config.m_long) * DEGREE_2_KM)*scale);
 }
-inline short lat2y(float lat)
+ short lat2y(float lat)
 {
 
     return (- dy + scrCtY - ((lat - config.m_config.m_lat) * DEGREE_2_KM)*scale);
 }
-inline double y2lat(short y)
+ double y2lat(short y)
 {
     return (y +dy - scrCtY )/scale/DEGREE_2_KM + config.m_config.m_lat;
 }
-inline double x2lon(short x)
+ double x2lon(short x)
 {
     return (x +dx - scrCtX )/scale/DEGREE_2_KM + config.m_config.m_long;
 }
@@ -312,10 +314,11 @@ void Mainwindow::updateTargets()
         if(selected_target_index == i)
         {
             ui->label_radar_id->setText((targetList.at(i)->id));
-            ui->label_range_radar->setText(QString::number(targetList.at(i)->range));
-            ui->label_status_azi_radar->setText( QString::number(targetList.at(i)->azi));
-            ui->label_status_lat_radar->setText( QString::number(targetList.at(i)->m_lat));
-            ui->label_status_long_radar->setText(QString::number(targetList.at(i)->m_lon));
+            ui->label_range_radar->setText(QString::number(targetList.at(i)->range)+"Nm");
+            ui->label_status_azi_radar->setText( QString::number(targetList.at(i)->azi)+"\xB0");
+            ui->label_status_lat_radar->setText( QString::number((short)targetList.at(i)->m_lat)+"\xB0"+QString::number((targetList.at(i)->m_lat-(short)targetList.at(i)->m_lat)*60,'g',4)+"N");
+            ui->label_status_long_radar->setText(QString::number((short)targetList.at(i)->m_lon)+"\xB0"+QString::number((targetList.at(i)->m_lon-(short)targetList.at(i)->m_lon)*60,'g',4)+"E");
+            ui->label_status_speed_radar->setText(QString::number(targetList.at(i)->speed)+"Kn");
         }
         else
         {
@@ -370,10 +373,15 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
         if(trackingRect.top<0)trackingRect.top=0;
         if(trackingRect.bottom>599)trackingRect.bottom=599;
         StartTracking(trackingRect);
+        ui->toolButton_radar_tracking->setChecked(false);
         isSelecting = false;
     }
-    ui->label_cursor_lat->setText(QString::number( y2lat(event->y())));
-    ui->label_cursor_lon->setText(QString::number( x2lon(event->x())));
+    ui->label_cursor_lat->setText(QString::number( (short)y2lat(event->y()))+"\xB0"+
+                                  QString::number(((float)y2lat(event->y())-(short)(y2lat(event->y())))*60,'g',4)+"N");
+    //ui->label_status_lat_radar->setText( QString::number((short)targetList.at(i)->m_lat)+"\xB0"+QString::number((targetList.at(i)->m_lat-(short)targetList.at(i)->m_lat)*60,'g',4)+"N");
+//    ui->label_cursor_lon->setText(QString::number( x2lon(event->x())));
+     ui->label_cursor_lon->setText(QString::number( (short)x2lon(event->x()))+"\xB0"+
+                                   QString::number(((float)x2lon(event->x())-(short)(x2lon(event->x())))*60,'g',4)+"E");
     float x = (event->x() - scrCtX+dx)/scale/CONST_NM;
     float y = -(event->y() - scrCtY+dy)/scale/CONST_NM;
     float azi =  atanf(x/y);
@@ -381,7 +389,8 @@ void Mainwindow::mouseReleaseEvent(QMouseEvent *event)
             if(azi<0)azi += PI_NHAN2;
     float range = sqrt(x*x+y*y);
     ui->label_cursor_azi->setText(QString::number( azi/PI*180));
-    ui->label_cursor_range->setText(QString::number( range,'g',2));
+    ui->label_cursor_azi->setText(QString::number( azi/PI*180,'g',4)+"\xB0");
+    ui->label_cursor_range->setText(QString::number( range,'g',2)+"Nm");
     //ui->label_cursor_azi->setText(QString::number( y2azi(event->y())));
     //ui->label_cursor_lon->setText(QString::number( x2lon(event->x())));
 //    if(isAddingTarget)
@@ -712,6 +721,7 @@ void Mainwindow::DrawMap()
             p.drawText(int_point.x()+5,int_point.y(),QString::fromWCharArray(vnmap.placeList[i].text.c_str()));
             //printf("toa do hien tai lat %f long %f\n",m_textList[i].m_Lat,m_textList[i].m_Long);
     }
+    isScreenUp2Date=false;
 
 }
 void Mainwindow::DrawGrid(QPainter* p,short centerX,short centerY)
@@ -725,30 +735,32 @@ void Mainwindow::DrawGrid(QPainter* p,short centerX,short centerY)
     p->drawLine(centerX-5,centerY,centerX+5,centerY);
     p->drawLine(centerX,centerY-5,centerX,centerY+5);
     //pen.setColor(QColor(30,90,150,120));
+    float step = ui->label_range->text().split(' ').at(0).toFloat()/4.0;
+    //printf("step:%f",step);
     pen.setWidth(2);
     p->setPen(pen);
 
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(10.0*CONST_NM*scale),
-                  (short)(10.0*CONST_NM*scale));
+                  (short)(step*CONST_NM*scale),
+                  (short)(step*CONST_NM*scale));
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(20.0*CONST_NM*scale),
-                  (short)(20.0*CONST_NM*scale));
+                  (short)(step*2*CONST_NM*scale),
+                  (short)(step*2*CONST_NM*scale));
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(30.0*CONST_NM*scale),
-                  (short)(30.0*CONST_NM*scale));
+                  (short)(step*3*CONST_NM*scale),
+                  (short)(step*3*CONST_NM*scale));
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(40.0*CONST_NM*scale),
-                  (short)(40.0*CONST_NM*scale));
+                  (short)(step*4*CONST_NM*scale),
+                  (short)(step*4*CONST_NM*scale));
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(50.0*CONST_NM*scale),
-                  (short)(50.0*CONST_NM*scale));
+                  (short)(step*5*CONST_NM*scale),
+                  (short)(step*5*CONST_NM*scale));
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(60.0*CONST_NM*scale),
-                  (short)(60.0*CONST_NM*scale));
+                  (short)(step*6*CONST_NM*scale),
+                  (short)(step*6*CONST_NM*scale));
     p->drawEllipse(QPoint(centerX,centerY),
-                  (short)(70.0*CONST_NM*scale),
-                  (short)(70.0*CONST_NM*scale));
+                  (short)(step*7*CONST_NM*scale),
+                  (short)(step*7*CONST_NM*scale));
     return;
     if(gridOff == 0)//with frame
     {
@@ -949,6 +961,7 @@ void Mainwindow::InitSetting()
     range = 6; UpdateScale();
     if(true)
     {
+        ui->textEdit_heading->setText(QString::number(config.m_config.trueN));
         SetGPS(config.m_config.m_lat, config.m_config.m_long);
         vnmap.setUp(config.m_config.m_lat, config.m_config.m_long, 50,"outputMap4layer.ism");
         if(pMap)delete pMap;
@@ -1005,7 +1018,6 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     p->drawRect(scrCtX+scrCtY,0,width()-scrCtX-scrCtY,height());
     p->drawRect(0,0,scrCtX-scrCtY,height());
     p->setBrush(Qt::NoBrush);
-
     QPen pengrid(QColor(128,128,0,255));
     pengrid.setWidth(4);
     p->setPen(pengrid);
@@ -1013,7 +1025,8 @@ void Mainwindow::DrawViewFrame(QPainter* p)
     pengrid.setWidth(2);
     p->setPen(pengrid);
     QFont font = p->font() ;
-    font.setPointSize(6);
+    font.setPointSize(8);
+    font.setBold(true);
     p->setFont(font);
     //short theta;
     for(short theta=0;theta<360;theta+=10){
@@ -1108,11 +1121,11 @@ void Mainwindow::UpdateRadarData()
         ReloadSetting();
     }
 
-    if(!isScreenUp2Date)
+    if(true)
     {
         updateTargets();
         update();
-        isScreenUp2Date = true;
+        //isScreenUp2Date = true;
     }
 
 
@@ -1152,7 +1165,7 @@ void Mainwindow::InitTimer()
     syncTimer1s->moveToThread(t);
     //
     connect(readBuffTimer,SIGNAL(timeout()),this,SLOT(updateData()));
-    readBuffTimer->start(50);
+    readBuffTimer->start(200);
     readBuffTimer->moveToThread(t1);
     //
     connect(scrUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateRadarData()));
@@ -1191,6 +1204,7 @@ void Mainwindow::LradControl()
             {control_sensitive = 0.2f;}
             controling = true;
             char dx = ((g_Tracker.m_RectCurrent.right + g_Tracker.m_RectCurrent.left)/2 - 400)/8.0*control_sensitive;
+
             char dy = -((g_Tracker.m_RectCurrent.bottom + g_Tracker.m_RectCurrent.top)/2 - 300)/6.0*control_sensitive;
             unsigned char bytes[8];
             bytes[0] = 0x02;
@@ -1248,7 +1262,7 @@ void Mainwindow::LradControl()
                 }
             }
         }
-        else if(false)
+        else if(ui->toolButton_cursor_control->isChecked())
         {
 
             //ui->label_cursor_lat->setText(QString::number( y2lat(event->y())));
@@ -1259,7 +1273,7 @@ void Mainwindow::LradControl()
             if(y<0)azi+=PI;
             azi = azi/PI*180;
             printf("\nazi:%f",azi);
-            if(tcpSender->state()==QAbstractSocket::ConnectedState&&(ui->toolButton_radar_tracking->isChecked()))
+            if(tcpSender->state()==QAbstractSocket::ConnectedState)
             {
                 short kazi = (azi-config.m_config.trueN)*100;
                 if(kazi>18000)kazi-=36000;
@@ -1308,6 +1322,10 @@ void Mainwindow::LradControl()
             ui->label_connect_state->setText("LRAD: Connected");
             tcpSender->write((char*)&bytes[0],4);
         }
+        else
+        {
+            ui->label_connect_state->setText("LRAD: Not connected");
+        }
 
     }
 
@@ -1342,31 +1360,31 @@ void Mainwindow::InitNetwork()
                 this, SLOT(processARPA()));
         //pcap
 
-        char errbuf[PCAP_ERRBUF_SIZE];
-        //
-        /* Retrieve the device list on the local machine */
-        if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
-        {
+//        char errbuf[PCAP_ERRBUF_SIZE];
+//        //
+//        /* Retrieve the device list on the local machine */
+//        if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
+//        {
 
-            printf( errbuf); return;
-        }
+//            printf( errbuf); return;
+//        }
 
 
-        d=alldevs;
-        if ( (adhandle= pcap_open(d->name,          // name of the device
-                                      65536,            // portion of the packet to capture
-                                                        // 65536 guarantees that the whole packet will be captured on all the link layers
-                                      PCAP_OPENFLAG_PROMISCUOUS,    // promiscuous mode
-                                      1000,             // read timeout
-                                      NULL,             // authentication on the remote machine
-                                      errbuf            // error buffer
-                                      ) ) == NULL)
-            {
-                /* Free the device list */
-                pcap_freealldevs(alldevs);
-                return ;
-            }
-        printf("\nlistening on %s...\n", d->name);
+//        d=alldevs;
+//        if ( (adhandle= pcap_open(d->name,          // name of the device
+//                                      65536,            // portion of the packet to capture
+//                                                        // 65536 guarantees that the whole packet will be captured on all the link layers
+//                                      PCAP_OPENFLAG_PROMISCUOUS,    // promiscuous mode
+//                                      1000,             // read timeout
+//                                      NULL,             // authentication on the remote machine
+//                                      errbuf            // error buffer
+//                                      ) ) == NULL)
+//            {
+//                /* Free the device list */
+//                pcap_freealldevs(alldevs);
+//                return ;
+//            }
+//        printf("\nlistening on %s...\n", d->name);
 
         /* start the capture */
 
@@ -1385,27 +1403,28 @@ void Mainwindow::processARPA()
         QStringList list = str.split(",");
         for(int i = 0;i<list.size();i++)
         {
-           if(list.at(i) =="$RATTM")
+           if(list.at(i).contains("$RATTM"))
            {
-               if(i+4>list.length())break;
+               if(i+5>list.length())break;
                QString tId = ((list.at(i+1)));
                float tRange = ((list.at(i+2))).toFloat();
                float tAzi = ((list.at(i+3))).toFloat();
-
+               float speed = ((list.at(i+5))).toFloat();
                //arpa_data.addARPA(tNum,tDistance,tRange);
                float tX = tRange*cos(PI*tAzi/180.0)*CONST_NM;
                float tY = tRange*sin(PI*tAzi/180.0)*CONST_NM;
                float tLat = config.m_config.m_lat + tX/DEGREE_2_KM;
                float tLon = config.m_config.m_long + tY/DEGREE_2_KM;
-               short i = 0;
-               for(;i<targetList.size();i++)
+               short j = 0;
+               for(;j<targetList.size();j++)
                {
-                   if(targetList.at(i)->id == tId)
+                   if(targetList.at(j)->id == tId)
                    {
-                       targetList.at(i)->setCoordinates(tLat,tLon,tRange,tAzi); break;
+                       targetList.at(j)->speed = speed;
+                       targetList.at(j)->setCoordinates(tLat,tLon,tRange,tAzi); break;
                    }
                }
-               if( i == targetList.size())
+               if( j == targetList.size())
                {
                    CTarget*  tg1 = new CTarget(this);
                    tg1->show();
@@ -2121,6 +2140,7 @@ void Mainwindow::on_toolButton_map_toggled(bool checked)
 
 void Mainwindow::on_toolButton_zoom_in_clicked()
 {
+    isScreenUp2Date=false;
     if(range<7)range++;
 
     UpdateScale();
@@ -2129,7 +2149,9 @@ void Mainwindow::on_toolButton_zoom_in_clicked()
 
 void Mainwindow::on_toolButton_zoom_out_clicked()
 {
+    isScreenUp2Date=false;
     if(range>0)range--;
+
     UpdateScale();
     DrawMap();
 }
@@ -2512,6 +2534,13 @@ void Mainwindow::on_toolButton_video_connect_toggled(bool checked)
 {
     //pcap_loop(adhandle, 0, packet_handler, NULL);
     OnVideoConnect(checked);
+    if(checked)
+    {
+        ui->toolButton_video_connect->setText("Disconnect");
+    }else
+    {
+         ui->toolButton_video_connect->setText("Connect");
+    }
 }
 
 void Mainwindow::on_toolButton_video_connect_2_toggled(bool checked)
@@ -2522,6 +2551,13 @@ void Mainwindow::on_toolButton_video_connect_2_toggled(bool checked)
 void Mainwindow::on_toolButton_ir_toggled(bool checked)
 {
     g_IsIR = checked;
+    if(checked)
+    {
+        ui->toolButton_ir->setText("Daylight Cam");
+    }else
+    {
+         ui->toolButton_ir->setText("Night Cam");
+    }
     if (!onConnectVideo)
     {
         ui->toolButton_video_connect->setChecked(false);
@@ -2542,4 +2578,35 @@ void Mainwindow::on_toolButton_ir_toggled(bool checked)
 void Mainwindow::on_toolButton_video_connect_clicked()
 {
 
+}
+
+void Mainwindow::on_toolButton_radar_tracking_toggled(bool checked)
+{
+    if(checked)
+    {
+        ui->toolButton_cursor_control->setChecked(false);
+    }
+}
+
+void Mainwindow::on_toolButton_cursor_control_toggled(bool checked)
+{
+    if(checked)
+    {
+        ui->toolButton_radar_tracking->setChecked(false);
+    }
+}
+
+void Mainwindow::on_toolButton_clear_target_clicked()
+{
+    for(short i = 0;i<targetList.size();i++)
+    {
+
+            targetList.at(i)->deleteLater();
+    }
+    targetList.clear();
+}
+
+void Mainwindow::on_toolButton_grid_clicked()
+{
+    isScreenUp2Date=false;
 }
