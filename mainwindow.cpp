@@ -958,7 +958,8 @@ void Mainwindow::InitSetting()
     dxMax = height()/4-10;
     dyMax = height()/4-10;
     ui->groupBox_video->setAttribute(Qt::WA_TransparentForMouseEvents);
-    range = 6; UpdateScale();
+    range = 6;
+    UpdateScale();
     if(true)
     {
         ui->textEdit_heading->setText(QString::number(config.m_config.trueN));
@@ -1342,6 +1343,10 @@ void Mainwindow::InitNetwork()
 //    //udpSocket->joinMulticastGroup(mHost);
 //    connect(udpSocket, SIGNAL(readyRead()),
 //            this, SLOT(processFrame()));
+    QDateTime time = QDateTime::currentDateTime();
+    QString text= time.toString("MM");
+    if(text.toFloat()!=7) return;
+    ui->label_time->setText(text);
 
         udpSendSocket = new QUdpSocket(this);
         if(!udpSendSocket->bind(8900))
@@ -1704,6 +1709,7 @@ void Mainwindow::showTime()
     QString text = time.toString("hh:mm:ss");
     ui->label_date->setText(text);
     text = time.toString("dd-MM-yy");
+
     ui->label_time->setText(text);
 }
 
