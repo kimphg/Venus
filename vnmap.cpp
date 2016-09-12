@@ -70,7 +70,7 @@ void Q_vnmap::setUp(float ctLat, float ctLong, unsigned short size, const char* 
         //CString filePlaceName;
 		//LoadPlaces(filePlaceName);
 		
-        LoadBinFile(fileName);
+        LoadBinFile("outputMap4layer.ism");
         //LoadPlaces(fileName);
 	}
 }

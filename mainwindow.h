@@ -24,7 +24,8 @@
 #include <QHostAddress>
 #include "ctarget.h"
 #include "Tracker.h"
-
+#include "CTrack.h"
+#include "CLocal.h"
 //#include "radarcontroldialog.h"
 //#include "c_arpa_data.h"
 //#include <QtSerialPort/QSerialPort>
@@ -87,9 +88,9 @@ private:
     QTimer          *drawTimer;
     QPoint          view_pos;
 
-
-
-
+    C2_TrackLst     m_trackList;
+    C2_Local        m_CLocal;
+    bool ProcDataAIS(BYTE *szBuff, int nLeng);
 
     bool LoadISMapFile();
     void SaveBinFile();
