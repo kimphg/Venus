@@ -14,6 +14,7 @@
 #include <vnmap.h>
 //#include <CpView.h>
 #include <Config.h>
+#include <CLocal.h>
 #include <gpsdialog.h>
 //#include <dataprocessingthread.h>
 #include <onexitdialog.h>
@@ -55,7 +56,7 @@ protected:
 
     enum radarSate   { DISCONNECTED,CONNECTED,CONNECTED_ROTATE9_TXOFF,CONNECTED_ROTATE12_TXOFF, CONNECTED_ROTATE9_TXON,CONNECTED_ROTATE12_TXON } radar_state;
 private:
-
+    bool ProcDataAIS(BYTE *szBuff, int nLeng );
     //void createActions();
     //void createMenus();
     void DrawGrid(QPainter* p,short centerX,short centerY);
@@ -63,6 +64,7 @@ private:
     void CameraControl(int direction);
     void InitSetting();
     void updateTargets();
+//    bool ProcDataAIS(BYTE *szBuff, int nLeng );
     void sendToRadar(const char *hexdata);
     void sendToRadar(unsigned char* hexdata);
 //    void SetSnScale(short value);
@@ -87,10 +89,6 @@ private:
     QTimer          *drawTimer;
     QPoint          view_pos;
 
-
-
-
-
     bool LoadISMapFile();
     void SaveBinFile();
     void InitNetwork();
@@ -107,7 +105,8 @@ private:
     void SetGPS(float mlat,float mlong);
     void StartTracking(RECT inputRECT);
 
-
+    C2_Local          m_CLocal;
+    C2_TrackLst m_trackList;
 public slots:
     void UpdateSetting();
 //    void UpdateSignScale();
@@ -116,6 +115,7 @@ public slots:
 private:
     void setRadarState(radarSate radarState);
 public:
+
     void setScaleNM(unsigned short rangeNM);
 private slots:
     void LradControl();

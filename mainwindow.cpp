@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 //
 //#define mapWidth 2000
 //#define mapWidth mapWidth
@@ -820,8 +821,52 @@ void Mainwindow::DrawGrid(QPainter* p,short centerX,short centerY)
 
 void Mainwindow::drawAisTarget(QPainter *p)
 {
+    //draw radar  target:
+    QPen penTargetRed(QColor(255,50,150));
+    penTargetRed.setWidth(0);
+    for(uint i=0;i<m_trackList.size();i++)
+    {
+            p->setPen(penTargetRed);
+            short j;
+            //draw track:
+            float fx,fy;
+            float mlat = m_trackList.at(i).m_Lat ;
+            mlat =  mlat/bit23* 180.0f ;
+            float mlon = m_trackList.at(i).m_Long;
+            mlon = mlon/bit23* 180.0f ;
+                vnmap.ConvDegToScr(&fx,&fy,&mlon,&mlat);
 
+                short x = (fx*scale)+scrCtX-dx;
+                short y = (fy*scale)+scrCtY-dy;
+                //draw ais mark
+                QPolygon poly;
+                QPoint point;
+                float head = m_trackList.at(i).m_Head*PI_NHAN2/(1<<16);
+                point.setX(x+8*sinf(head));
+                point.setY(y-8*cosf(head));
+                poly<<point;
+                point.setX(x+8*sinf(head+2.3562f));
+                point.setY(y-8*cosf(head+2.3562f));
+                poly<<point;
+                point.setX(x);
+                point.setY(y);
+                poly<<point;
+                point.setX(x+8*sinf(head-2.3562f));
+                point.setY(y-8*cosf(head-2.3562f));
+                poly<<point;
+                p->drawPolygon(poly);
+                //draw ais name
+//                if(ui->toolButton_ais_name->isChecked())
+//                {
+                    QFont font = p->font() ;
+                    font.setPointSize(6);
+                    p->setFont(font);
+                    p->drawText(x+5,y+10,(m_trackList.at(i).m_szName));
+//                }
+//                p->drawText(x+5,y+5,QString::fromAscii((char*)&m_trackList.at(i).m_MMSI[0],9));
+                //printf("\nj:%d,%d,%d,%f,%f",j,x,y,arpa_data.ais_track_list[i].object_list[j].mlong,arpa_data.ais_track_list[i].object_list[j].mlat);
 
+    }
 }
 void Mainwindow::paintEvent(QPaintEvent *event)
 {
@@ -840,7 +885,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw signal
     //DrawSignal(&p);
 
-    //drawAisTarget(&p);
+    drawAisTarget(&p);
     //draw cursor
     QPen penmousePointer(QColor(0x50ffffff));
     /*if(!isDraging)
@@ -1345,7 +1390,7 @@ void Mainwindow::InitNetwork()
 //            this, SLOT(processFrame()));
     QDateTime time = QDateTime::currentDateTime();
     QString text= time.toString("MM");
-    if(text.toFloat()!=7) return;
+//    if(text.toFloat()!=7) return;
     ui->label_time->setText(text);
 
         udpSendSocket = new QUdpSocket(this);
@@ -1406,6 +1451,7 @@ void Mainwindow::processARPA()
         //printf(datagram.data());
         QString str(datagram.data());
         QStringList list = str.split(",");
+        short dataStart = 0;
         for(int i = 0;i<list.size();i++)
         {
            if(list.at(i).contains("$RATTM"))
@@ -1441,10 +1487,43 @@ void Mainwindow::processARPA()
                isNewTTM = true;
 
            }
+           else if(list.at(i).contains("AI"))
+           {
+               ProcDataAIS((BYTE*)(datagram.data()+ dataStart), datagram.size() - dataStart);
+           }
+           dataStart+= list.at(i).size();
         }
     }
 
 }
+bool Mainwindow::ProcDataAIS(BYTE *szBuff, int nLeng )
+ {
+     C2_Track       nTkNew;                              // New receive Track
+     short nIndex = -1;
+    int nRec;
+     // Connect 2 buffer is fragment
+     if(!m_CLocal.OnLinkBuff(szBuff, nLeng,nRec))
+         return 0;
+
+     if(!m_CLocal.GetTrackAIS(m_CLocal.m_Buff, m_CLocal.m_Leng, &nTkNew,nRec))
+         return 0;
+     for(short i = 0;i<m_trackList.size();i++)
+     {
+         if(m_trackList.at(i).CheckMMSI(nTkNew.m_MMSI))
+         {
+             m_trackList.at(i).Update(&nTkNew);
+             nIndex = i;
+             return true;
+         }
+     }
+     if(nIndex<0)
+     {
+        m_trackList.push_back(nTkNew);
+     }
+     return true;
+}
+
+
 void Mainwindow::processFrame()
 {
 //    while (udpSocket->hasPendingDatagrams()) {
@@ -1685,7 +1764,7 @@ void Mainwindow::on_actionRecording_toggled(bool arg1)
         //processing->startRecord(now.toString("dd.MM-hh.mm.ss")+HR_FILE_EXTENSION);
     }
     else
-    {        
+    {
         //processing->stopRecord();
     }
 }
@@ -2505,7 +2584,7 @@ void Mainwindow::StartTracking(RECT inputRECT)
     g_Tracker.InitForFirstFrame1(g_Frame, inputRECT);
     g_FrameHalf = cvCreateImage(cvSize(g_Tracker.m_ImageMaxX/2, g_Tracker.m_ImageMaxY/2), 8, 3);
     g_IsTracking = true;
-    
+
 }
 
 void Mainwindow::OnVideoConnect(bool checked)

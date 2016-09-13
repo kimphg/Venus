@@ -3,11 +3,11 @@
 
 bool Q_vnmap::checkInside(Point_t  *point)
 {
-        if((point->m_Lat)<(brPos.m_Lat)) return 0;
-        if((point->m_Long)<(ulPos.m_Long)) return 0;
-        if((point->m_Lat)>(ulPos.m_Lat)) return 0;
-        if((point->m_Long)>(brPos.m_Long)) return 0;
-        return 1;
+    if((point->m_Lat)<(brPos.m_Lat)) return 0;
+    if((point->m_Long)<(ulPos.m_Long)) return 0;
+    if((point->m_Lat)>(ulPos.m_Lat)) return 0;
+    if((point->m_Long)>(brPos.m_Long)) return 0;
+    return 1;
 }
 //void Q_vnmap::getElement(short nlayer, short npoly, short npoint, Point_t *point)
 //{
@@ -70,7 +70,7 @@ void Q_vnmap::setUp(float ctLat, float ctLong, unsigned short size, const char* 
         //CString filePlaceName;
 		//LoadPlaces(filePlaceName);
 		
-        LoadBinFile(fileName);
+        LoadBinFile("outputMap4layer.ism");
         //LoadPlaces(fileName);
 	}
 }
@@ -207,18 +207,17 @@ void Q_vnmap::LoadPlaces(const char* binfileName)
 	
     }*/
 
-
 }
 void Q_vnmap::ConvDegToScr(float* x, float *y, float *m_Long,float *m_Lat)
 {
-    *x	= (((*m_Long)-currPos.m_Long) * 111.31949079327357f);// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
+    *x	= (((*m_Long)-currPos.m_Long) * 111.31949079327357f);
     *y	= ((currPos.m_Lat - (*m_Lat)) * 111.31949079327357f);
     //toa do tinh bang KM so voi diem currPos
 }
 void Q_vnmap::ConvScrToDeg(float *x, float *y, float *m_Long, float *m_Lat)
 {
 
-    *m_Long = (*x)/111.31949079327357f+currPos.m_Long;
+    *m_Long = (*x)/111.31949079327357f + currPos.m_Long;
     *m_Lat  = currPos.m_Lat -  (*y)/111.31949079327357f;
     //toa do lat long
 }

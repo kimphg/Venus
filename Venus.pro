@@ -12,7 +12,6 @@
 #file type defined as .r2d, radar data starts from 22nd byte of each frame
 #run for both 1024 and 2048 data type
 #radar resolution can be changed by the user
-
 @CONFIG += debug_and_release@
 QT       += core gui
 QT       += network
@@ -32,7 +31,11 @@ SOURCES += main.cpp\
     qcustomtabwidget.cpp \
     Utility.cpp \
     Tracker.cpp \
-    ctarget.cpp
+    ctarget.cpp \
+    CDefine.cpp \
+    CLocal.cpp \
+    CPoints.cpp \
+    CTrack.cpp
 HEADERS  += mainwindow.h \
     vnmap.h \
     Config.h \
@@ -45,7 +48,11 @@ HEADERS  += mainwindow.h \
     qcustomtabwidget.h \
     Utility.h \
     Tracker.h \
-    ctarget.h
+    ctarget.h \
+    CDefine.h \
+    CLocal.h \
+    CPoints.h \
+    CTrack.h
 
 FORMS    += mainwindow.ui \
     gpsdialog.ui \

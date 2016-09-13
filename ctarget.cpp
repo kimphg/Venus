@@ -21,7 +21,7 @@ void CTarget::setCoordinates(float lat,float lon,float rg,float az)
 }
 void CTarget::hoverEnter(QHoverEvent *)
 {
-    highLight();
+    //highLight();
 }
 void CTarget::setPosistion(short x, short y)
 {
@@ -29,25 +29,27 @@ void CTarget::setPosistion(short x, short y)
 }
 void CTarget::hoverLeave(QHoverEvent *)
 {
-    resetView();
+    //resetView();
 }
 
 void CTarget::hoverMove(QHoverEvent *)
 {
-    highLight();
+    //highLight();
 
 }
 void CTarget::paintEvent(QPaintEvent *event)
 {
-    QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    if(selected)p.setPen(QPen(Qt::magenta));
-        else
-        p.setPen(QPen(Qt::cyan));
-    QFont font;
-    font.setPointSize(12);
-    p.setFont(font);
-    p.drawText(4,0,20,20,0,QString::number(this->id.toInt()));
+    if(selected)this->setStyleSheet("border: 2px dashed magenta;");
+    else this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  cyan;");
+//    QPainter p(this);
+//    p.setRenderHint(QPainter::Antialiasing, true);
+//    if(selected)p.setPen(QPen(Qt::magenta));
+//        else
+//        p.setPen(QPen(Qt::cyan));
+//    QFont font;
+//    font.setPointSize(12);
+//    p.setFont(font);
+//    p.drawText(4,0,20,20,0,QString::number(this->id.toInt()));
 }
 void CTarget::highLight()
 {
@@ -73,14 +75,14 @@ void CTarget::OnClick()
 {
     setSelected(true);
     clicked = true;
-    resetView();
+    //resetView();
     //this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  blue;");
     //this->
 }
 void CTarget::setSelected(bool selected)
 {
     this->selected = selected;
-    resetView();
+    //resetView();
     //this->setStyleSheet("background-color: rgba(0,0,0,0);border : 2px dashed  blue;");
     //this->
 }
@@ -88,18 +90,7 @@ bool CTarget::event(QEvent *event)
 {
     switch(event->type())
     {
-    case QEvent::HoverEnter:
-        hoverEnter(static_cast<QHoverEvent*>(event));
-        return true;
-        break;
-    case QEvent::HoverLeave:
-        hoverLeave(static_cast<QHoverEvent*>(event));
-        return true;
-        break;
-    case QEvent::HoverMove:
-        hoverMove(static_cast<QHoverEvent*>(event));
-        return true;
-        break;
+
     case QEvent::MouseButtonPress:
         OnClick();
         return true;
