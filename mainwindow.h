@@ -90,13 +90,10 @@ private:
     QTimer          *drawTimer;
     QPoint          view_pos;
 
-<<<<<<< HEAD
-=======
     C2_TrackLst     m_trackList;
     C2_Local        m_CLocal;
-    bool ProcDataAIS(BYTE *szBuff, int nLeng);
+    //bool ProcDataAIS(BYTE *szBuff, int nLeng);
 
->>>>>>> origin/master
     bool LoadISMapFile();
     void SaveBinFile();
     void InitNetwork();
@@ -113,8 +110,7 @@ private:
     void SetGPS(float mlat,float mlong);
     void StartTracking(RECT inputRECT);
 
-    C2_Local          m_CLocal;
-    C2_TrackLst m_trackList;
+
 public slots:
     void UpdateSetting();
 //    void UpdateSignScale();
