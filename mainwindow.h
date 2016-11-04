@@ -121,6 +121,7 @@ private:
 public:
 
     void setScaleNM(unsigned short rangeNM);
+    void DrawRadarTargetByPainter(QPainter *p);
 private slots:
     void LradControl();
     void ShowVideoCam();

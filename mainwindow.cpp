@@ -868,6 +868,37 @@ void Mainwindow::drawAisTarget(QPainter *p)
 
     }
 }
+
+void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from processing->radarData->mTrackList
+{
+
+    QPen penTarget(Qt::magenta);
+    penTarget.setWidth(2);
+
+    QPen penSelTarget(Qt::magenta);
+    penSelTarget.setWidth(2);
+    penSelTarget.setStyle(Qt::DashLine);
+    QPen penTargetBlue(Qt::cyan);
+    penTargetBlue.setWidth(2);
+    //penTargetBlue.setStyle(Qt::DashLine);
+    //QPen penARPATrack(Qt::darkYellow);
+    //draw radar targets
+    //float x,y;
+
+    for(short i = 0;i<targetList.size();i++)
+    {
+        float x	= lon2x(targetList.at(i)->m_lon) ;
+        float y	= lat2y(targetList.at(i)->m_lat);
+        if(!targetList.at(i)->isHidden())
+        {
+            if(targetList.at(i)->selected)p->setPen(penSelTarget);
+            else
+                p->setPen(penTargetBlue);
+            p->drawText(x+15,y+15,targetList.at(i)->id);
+        }
+    }
+
+}
 void Mainwindow::paintEvent(QPaintEvent *event)
 {
     event = event;
@@ -908,7 +939,7 @@ void Mainwindow::paintEvent(QPaintEvent *event)
     //draw zooom
 
     //draw frame
-
+    DrawRadarTargetByPainter(&p);
     DrawViewFrame(&p);
     if(true)
     {
