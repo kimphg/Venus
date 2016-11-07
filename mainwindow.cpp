@@ -22,6 +22,7 @@ QRect toBeTracked;
 bool isSelecting = false;
 float           scale;
 CConfig         config;
+int selected_target_type = 0;
 //pcap
 //pcap_if_t *alldevs;
 //pcap_if_t *d;
@@ -309,23 +310,63 @@ void Mainwindow::updateTargets()
         {
 
             selected_target_index = i;
-
+            selected_target_type = 0;
             targetList.at(i)->clicked = false;
         }
         if(selected_target_index == i)
         {
+            if(selected_target_type == 0)
+            {
             ui->label_radar_id->setText((targetList.at(i)->id));
+            ui->label_data_type->setText("Radar");
             ui->label_range_radar->setText(QString::number(targetList.at(i)->range)+"Nm");
-            ui->label_status_azi_radar->setText( QString::number(targetList.at(i)->azi)+"\xB0");
-            ui->label_status_lat_radar->setText( QString::number((short)targetList.at(i)->m_lat)+"\xB0"+QString::number((targetList.at(i)->m_lat-(short)targetList.at(i)->m_lat)*60,'g',4)+"N");
-            ui->label_status_long_radar->setText(QString::number((short)targetList.at(i)->m_lon)+"\xB0"+QString::number((targetList.at(i)->m_lon-(short)targetList.at(i)->m_lon)*60,'g',4)+"E");
-            ui->label_status_speed_radar->setText(QString::number(targetList.at(i)->speed)+"Kn");
+            ui->label_status_azi_radar->setText( QString::number(targetList.at(i)->azi,'f',2)+"\xB0");
+            ui->label_status_lat_radar->setText( QString::number((short)targetList.at(i)->m_lat)+"\xB0"+QString::number((targetList.at(i)->m_lat-(short)targetList.at(i)->m_lat)*60,'f',2)+"N");
+            ui->label_status_long_radar->setText(QString::number((short)targetList.at(i)->m_lon)+"\xB0"+QString::number((targetList.at(i)->m_lon-(short)targetList.at(i)->m_lon)*60,'f',2)+"E");
+            ui->label_status_speed_radar->setText(QString::number(targetList.at(i)->speed,'f',2)+"Kn");
+            ui->label_status_heading_radar->setText(QString::number(targetList.at(i)->heading,'f',2)+"\xB0");
+            }
         }
         else
         {
             targetList.at(i)->setSelected(false);// = false;
         }
+
+
         //printf("\nx:%f y:%f",x,y);
+    }
+    if(selected_target_type == 1)
+    {
+                //p->setPen(penTargetRed);
+                short j;
+                if(selected_target_index>=0&&selected_target_index<m_trackList.size())
+                {
+                C2_Track* selAIS = &m_trackList.at(selected_target_index);
+                //draw track:
+                float fx,fy;
+                float mlat = selAIS->m_Lat ;
+                mlat =  mlat/bit23* 180.0f ;
+                float mlon = selAIS->m_Long;
+                mlon = mlon/bit23* 180.0f ;
+                    vnmap.ConvDegToScr(&fx,&fy,&mlon,&mlat);
+                if(fy)
+                {
+//                    printf("showais");
+                    double azi = atan(-fx/fy);
+                    azi = azi/3.141592654*180.0;
+                    if(fy>0)azi+=180;
+                    if(azi<0)azi+=360;
+                    double range = sqrt(fx*fx+fy*fy)*1.852;
+                    ui->label_radar_id->setText(QString::fromAscii((char*)&selAIS->m_MMSI,9));
+                    ui->label_data_type->setText("AIS");
+                    ui->label_range_radar->setText("--");//QString::number(range,'f',2)+"Nm");
+                    ui->label_status_azi_radar->setText("--"); //QString::number(azi,'f',2)+"\xB0");
+                    ui->label_status_lat_radar->setText( QString::number((short)mlat)+"\xB0"+QString::number((mlat-(short)mlat)*60,'f',2)+"N");
+                    ui->label_status_long_radar->setText(QString::number((short)mlon)+"\xB0"+QString::number((mlon-(short)mlon)*60,'f',2)+"E");
+                    ui->label_status_heading_radar->setText(QString::number(selAIS->m_Head/(double)(1<<16)*360.0,'f',2)+"\xB0");
+                    ui->label_status_speed_radar->setText(QString::number(selAIS->m_Speed)+"Kn");
+                }
+                }
     }
     //ui->
     //t1.setGeometry(400,400,20,20);
@@ -510,7 +551,27 @@ void Mainwindow::mousePressEvent(QMouseEvent *event)
             isDraging = true;
             mousePointerX=event->x();
             mousePointerY=event->y();
+
             //printf("mouseX %d\n",mouseX);
+            for(uint i=0;i<m_trackList.size();i++)
+            {
+                    //p->setPen(penTargetRed);
+                    float fx,fy;
+                    float mlat = m_trackList.at(i).m_Lat ;
+                    mlat =  mlat/bit23* 180.0f ;
+                    float mlon = m_trackList.at(i).m_Long;
+                    mlon = mlon/bit23* 180.0f ;
+
+                    vnmap.ConvDegToScr(&fx,&fy,&mlon,&mlat);
+                    short x = (fx*scale)+scrCtX-dx;
+                    short y = (fy*scale)+scrCtY-dy;
+                    if(abs(x-mousePointerX)<5&&abs(y-mousePointerY)<5)
+                    {
+                        selected_target_index = i;
+                        selected_target_type = 1;
+                        //printf("selais");
+                    }
+            }
         }
     }
     QMainWindow::mousePressEvent(event);
@@ -884,7 +945,9 @@ void Mainwindow::DrawRadarTargetByPainter(QPainter* p)//draw radar target from p
     //QPen penARPATrack(Qt::darkYellow);
     //draw radar targets
     //float x,y;
-
+    QFont font;
+    font.setPointSize(8);
+    p->setFont(font);
     for(short i = 0;i<targetList.size();i++)
     {
         float x	= lon2x(targetList.at(i)->m_lon) ;
@@ -1239,7 +1302,7 @@ void Mainwindow::InitTimer()
 //    fullScreenTimer->start(1000);
     connect(syncTimer1s, SIGNAL(timeout()), this, SLOT(sync1()));
     syncTimer1s->start(1000);
-    syncTimer1s->moveToThread(t);
+    //syncTimer1s->moveToThread(t);
     //
     connect(readBuffTimer,SIGNAL(timeout()),this,SLOT(updateData()));
     readBuffTimer->start(200);
@@ -1492,6 +1555,7 @@ void Mainwindow::processARPA()
                float tRange = ((list.at(i+2))).toFloat();
                float tAzi = ((list.at(i+3))).toFloat();
                float speed = ((list.at(i+5))).toFloat();
+               float heading = ((list.at(i+6))).toFloat();;
                //arpa_data.addARPA(tNum,tDistance,tRange);
                float tX = tRange*cos(PI*tAzi/180.0)*CONST_NM;
                float tY = tRange*sin(PI*tAzi/180.0)*CONST_NM;
@@ -1503,6 +1567,7 @@ void Mainwindow::processARPA()
                    if(targetList.at(j)->id == tId)
                    {
                        targetList.at(j)->speed = speed;
+                       targetList.at(j)->heading = heading;
                        targetList.at(j)->setCoordinates(tLat,tLon,tRange,tAzi); break;
                    }
                }
@@ -1664,6 +1729,7 @@ void Mainwindow::on_actionConnect_triggered()
 void Mainwindow::sync1()//period 1 second
 {
     updateTargets();
+    udpARPA->writeDatagram("1",QHostAddress("127.0.0.1"),8001);
     // display radar temperature:
     //ui->label_temp->setText(QString::number(processing->radarData->tempType)+"|"+QString::number(processing->radarData->temp)+"\260C");
 //    int n = 32*256.0f/((processing->radarData->noise_level[0]*256 + processing->radarData->noise_level[1]));
