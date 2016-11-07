@@ -115,8 +115,8 @@ win32:CONFIG(release, debug|release):LIBS += -L$$PWD/../opencv/build/x86/vc11/li
 #win32:CONFIG(release, debug|release):INCLUDEPATH += $$PWD/armadillo/lib_winx86
 #win32:CONFIG(release, debug|release):DEPENDPATH += $$PWD/armadillo/lib_winx86
 
-unix:QMAKE_CXXFLAGS += -O2
-unix:QMAKE_CXXFLAGS += -l -DARMA_DONT_USE_WRAPPER -lblas -llapack
+#unix:QMAKE_CXXFLAGS += -O2
+#unix:QMAKE_CXXFLAGS += -l -DARMA_DONT_USE_WRAPPER -lblas -llapack
 DISTFILES += \
     appIcon.rc \
     notes.txt
